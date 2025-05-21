@@ -1,236 +1,626 @@
-# 🚀 æternals: Autonomous Telegram Bot Network
+# 🚀 aengel 2.0 , an autonomous entity on aeternity blockchain
 
 ![Powered by Aeternity Foundation](https://img.shields.io/badge/Powered%20by-Aeternity%20Foundation-blue)
 
 > 🌟 **This project is proudly supported by the [Aeternity Foundation](https://aeternity.foundation/)** - Advancing decentralized communication technologies through innovative AI solutions.
 
-A ground-breaking system that enables multiple AI bots to see and communicate with each other in Telegram groups, overcoming the fundamental Telegram API limitation where bots cannot see other bots' messages.
+# @elizaos/plugin-aeternity
 
-![Bot Communication](https://img.shields.io/badge/Bot--to--Bot-Communication-purple)
-![Agent Management System](https://img.shields.io/badge/Agent%20Management-System-blue)
-![Security Enhanced](https://img.shields.io/badge/Security-Enhanced-green)
-![Real-time Monitoring](https://img.shields.io/badge/Monitoring-Real--time-orange)
+æeternity blockchain plugin for Eliza OS that provides essential services and actions for private key management, token operations, and Telegram tipping.
 
-## 📚 System Overview
+> **Current Status:** Phase 1 implementation is in progress. The plugin's core tipping functionality has been implemented but some features like pending tip processing are currently disabled. See [Pre-Production Environment](#pre-production-environment) section for testing instructions.
 
-Aeternals enables an autonomous network of AI bots that interact with each other and humans in Telegram groups. Our system uses a relay server architecture to bypass Telegram's API limitations, providing:
+## Project Status: Pre-Alpha Development
 
-- **See each other's messages**: Bots can process and respond to other bots' messages
-- **Make independent decisions**: Each bot autonomously decides whether to ignore or respond
-- **Support managed turn-taking**: Prevents overlapping responses with FIFO or round-robin strategies
-- **Maintain shared context**: Uses in-memory state for real-time tracking and SQLite for persistence
-- **Express distinct personalities**: Unique tone, emoji, and stylistic traits via PersonalityEnhancer
-- **Simulate realistic interactions**: Typing indicators and variable response delays for natural pacing
+This plugin is currently in pre-alpha development. Core wallet and tipping functionality has been implemented but certain features are still under development or temporarily disabled.
 
-Built on ElizaOS, Aeternals provides complete agent lifecycle management:
+### Phase 1: Core Wallet & Tipping (In Progress)
+- ✅ Private key management with encryption
+- ✅ AE transfers
+- ✅ Telegram tipping with address registration
+- ✅ Group chat notifications
+- ✅ Contribution analysis for automatic tip amounts
+- ⏳ Pending tip processing (temporarily disabled)
 
-- **Starting Agents**: Secure launching with consistent port assignment
-- **Stopping Agents**: Clean termination with proper resource cleanup
-- **Monitoring**: Real-time activity tracking and health checks
-- **Security**: Enhanced protection for tokens and system resources
+### Phase 2: Token Management (Planned)
+- AEX-9 token deployment
+- Token transfers
+- Balance management
 
-## 📋 Key Achievements
+### Phase 3: Advanced Features (Planned)
+- Superhero DEX integration
+- Price fetching
+- Trading operations
 
-- ✅ **Bot-to-Bot Visibility**: Successfully implemented relay server enabling bots to see and process each other's messages
-- ✅ **Decision Logic**: Bots can analyze other bots' messages and make IGNORE/RESPOND decisions
-- ✅ **Hybrid Memory Model**: Uses runtime memory manager with SQLite persistence and in-memory fallback via ConversationManager
-- ✅ **Relay Server Communication**: Achieved stable heartbeat connections from all agents to relay server
-- ✅ **Valhalla Runtime Integration**: Successfully patched and integrated with ElizaOS core framework
-- ✅ **Flexible Configuration**: Environment variable support for group IDs and secure configuration
-- ✅ **Character Personalization**: Six unique bot personalities with distinct behaviors via PersonalityEnhancer
-- ✅ **Runtime Patching System**: Implemented robust patching mechanism for runtime enhancements
-- ✅ **Direct Telegram API Integration**: Bots can respond directly to each other through the Telegram API
-- ✅ **Conversation Lifecycle Management & Turn-Taking**: Basic conversation state management and FIFO/round-robin turn-taking via ConversationManager
-- ✅ **Personality Integration**: Integrated PersonalityEnhancer for message styling, emoji, and response timing
+## Known Limitations
 
-## 📋 Core Components
+Current implementation has the following limitations:
 
-The Aeternals system consists of these essential parts:
+1. **Pending Tip Processing**: The feature to process pending tips when a user registers their address is currently disabled.
+2. **Action Type System**: The plugin is being updated to match the latest Eliza OS action type system.
+3. **Error Handling**: Error handling in certain parts of the code is still being refined.
 
-1. **Relay Server** - Central communication hub enabling cross-bot message visibility
-2. **TelegramMultiAgentPlugin** - Orchestrates message routing, conversation coordination, and ElizaOS integration
-3. **ConversationManager** - Manages conversation IDs, state storage, participant tracking, and turn-taking
-4. **PersonalityEnhancer** - Applies personality-driven styling, emojis, and response timing to messages
-5. **TypingSimulator** - Simulates typing indicators and calculates realistic delays before sending
-6. **Memory Management System** - Hybrid in-memory and SQLite persistence for conversations and history
-7. **Character System** - Defines and loads unique agent personalities and traits
-8. **start-agents.sh & stop_agents.sh** - Scripts for launching and terminating agents with secure environment handling
-9. **Monitor and Health Checks** - Real-time system monitoring and health endpoints
+## Pre-Production Environment
 
-## 🔧 Technical Features
+The plugin is available for pre-production testing. We've implemented:
 
-### Hybrid Memory Management System (New)
+1. **Mock Client Mode**: For development and testing without real blockchain transactions
+2. **Testing Suite**: Comprehensive tests for all functionality
+3. **Error Handling**: Graceful error handling for development and testing
+4. **Environment Variables**: Configuration for different environments
 
-- **Reliability Focus**: In-memory state for speed with SQLite persistence for durability
-- **Runtime Patching**: Dynamically injects and configures memory adapter at runtime
-- **Configurable**: In-memory retention policies and SQLite data storage paths
-- **Optimized Performance**: Reduced overhead for real-time responses
-- **Environment Flag**: `USE_IN_MEMORY_DB` toggles hybrid memory mode
+To run the pre-production tests:
 
-### Conversation Management System (New)
+```bash
+pnpm tsx pre-prod-test.ts
+```
 
-- **Conversation Lifecycle Tracking**: Creates and tracks conversation IDs, participants, topics, and statuses
-- **Turn-Taking Strategies**: FIFO, round-robin, and configurable strategies to control response order
-- **Conflict Avoidance**: Prevents multiple agents from speaking simultaneously and enforces cooldowns
-- **Conversation Persistence**: Stores state changes and messages in SQLite for recovery and long-term context
-- **Personality-Driven Behaviors**: Collaborates with PersonalityEnhancer for context-aware, trait-based responses
-- **Typing Simulation**: Integrates with TypingSimulator to enhance natural pacing
+This will test all the core functionality in a simulated environment without making actual blockchain transactions.
 
-### Start System (`start-agents.sh`)
+## Production Deployment Requirements
 
-- **Session Isolation**: Uses `setsid` to create independent process groups
-- **Consistent Port Assignment**: Three-tier port allocation system
-  - Reuses previous port assignments when available
-  - Falls back to position-based port allocation (agent's position in array + starting port)
-  - Dynamically finds available ports if needed
-- **Token Security**: Masks sensitive tokens and properly handles environment variables
-- **Process Management**: Better PID tracking with proper child process handling
-- **Permissions Management**: Applies secure file permissions
-- **Environment Variable Support**: Configures group IDs through `TELEGRAM_GROUP_IDS` environment variable
+To deploy this plugin in a production environment, the following steps are required:
 
-### Stop System (`stop_agents.sh`)
+1. **Secure Key Management**:
+   - Implement proper private key encryption with strong salts
+   - Consider using a Hardware Security Module (HSM) or Trusted Execution Environment (TEE)
+   - Never store unencrypted keys in environment variables or config files
 
-- **Process Tree Termination**: Properly terminates all child processes
-- **Graceful Shutdown**: Attempts clean shutdown before force killing
-- **Resource Cleanup**: Removes port files and PID files
-- **Port Cleanup Mode**: Special mode to free all used ports
-- **Enhanced Security**: Input validation and secure command execution
+2. **Blockchain Integration**:
+   - Configure connection to a reliable Aeternity node
+   - Set up monitoring for node connectivity and blockchain health
+   - Implement transaction receipt verification and confirmation monitoring
 
-### Monitoring System (`monitor_agents.sh`)
+3. **Security Considerations**:
+   - Implement rate limiting to prevent abuse
+   - Add IP-based restrictions for sensitive operations
+   - Set up logging and alerting for unusual activities
+   - Consider multi-signature wallets for large transaction amounts
 
-- **Real-time Log Display**: View activity across all agents simultaneously
-- **Agent Status Checks**: Comprehensive health monitoring
-- **Port Usage Verification**: Multi-method port detection
-- **Security Auditing**: Permissions and exposure checks
-- **Resource Usage Statistics**: Memory, CPU, and runtime tracking
+4. **Testing Process**:
+   - Test transactions on testnet before mainnet deployment
+   - Perform security audits of key handling code
+   - Conduct penetration testing of the API endpoints
 
-### Relay Server System
+By completing these steps, the plugin will be ready for secure production deployment with real transactions on the Aeternity blockchain.
 
-- **Bot-to-Bot Communication**: Successfully enables bots to see and process each other's messages
-- **Bypass Telegram Limitations**: Overcomes API limitation where bots cannot see other bots' messages
-- **Agent Registration**: Automatic registration of agents with the relay server
-- **Message Routing**: Intelligently routes messages to appropriate agents
-- **Heartbeat Mechanism**: Maintains active connections with periodic checks
-- **Decision Processing**: Allows bots to make IGNORE/RESPOND decisions on other bots' messages
-- **Health Endpoint**: Provides real-time status of all connected agents
+## Overview
 
-## 🔒 Security Features
+The Aeternity plugin serves as a foundational component of Eliza OS, bridging Aeternity blockchain capabilities with the Eliza ecosystem. It provides crucial services for secure private key management, transaction operations, and Telegram tipping features enabling agents to reward valuable community contributions.
 
-The management system includes extensive security enhancements:
+## Features
 
-- **Secure Process Isolation**: Prevents signal propagation between processes
-- **Input Validation**: Prevents command injection and script exploitation
-- **Token Protection**: Masks sensitive information and secures environment variables
-- **Permission Management**: Applies and verifies proper file permissions
-- **Audit Capabilities**: Security scanning for potential vulnerabilities
-- **Process Verification**: Ensures processes are properly running and using expected resources
-- **Environment Variable Security**: Properly handles sensitive configuration through environment variables
+### Wallet Management
 
-## 📊 Monitoring Capabilities
+* **Private Key Encryption**: Secure private key storage using encryption
+* **Key Generation**: Secure key pair generation with customizable security levels
+* **Address Management**: Manage Aeternity addresses
+* **Balance Tracking**: Monitor account balances
 
-The monitoring system provides comprehensive visibility:
+### Transaction Operations
 
-- **Real-time Activity**: View incoming/outgoing messages as they happen
-- **Agent Health**: Check uptime, resource usage, and connectivity
-- **Port Management**: Verify port assignments and detect conflicts
-- **Log Analysis**: Filter logs by activity type or errors
-- **Resource Tracking**: Monitor memory usage, CPU, and runtime statistics
-- **Bot Communication**: Verify successful message relay between bots
-- **Relay Server Health**: Monitor agent registration and heartbeat status
+* **AE Transfers**: Send and receive native AE tokens securely
+* **Transaction Tracking**: Monitor transaction status and confirmations
+* **Fee Estimation**: Calculate appropriate transaction fees
 
-## 📈 Resource Management
+### Telegram Integration
 
-The system optimizes resource usage:
+* **User Tipping**: Send AE tokens to Telegram users
+* **Address Registration**: Request and store Aeternity addresses from users via DM
+* **Group Notifications**: Notify groups when tips are sent and addresses are registered
+* **Transaction Records**: Track tipping history
+* **Custom Messages**: Include personalized messages with tips
 
-- **Process Tracking**: Properly manages PID files and process trees
-- **Port Management**: Ensures consistent port assignment
-- **Memory Usage**: Tracks and reports memory consumption
-- **CPU Utilization**: Monitors agent CPU usage
-- **State Preservation**: Maintains consistent state across restarts
-- **In-Memory Mode**: Option to use memory-only mode for improved performance
-- **SQLite Persistence**: Optional file-based SQLite storage
+### Contribution Analysis
 
-## 🚀 Current Status
+* **Automated Evaluation**: Analyze the description of a contribution to determine its value
+* **Suggested Tip Amounts**: Get recommended tip amounts based on contribution level
+* **Contribution Levels**: Support for minor, helpful, valuable, major, and exceptional contributions
+* **Contribution Types**: Categorization of contributions (code, tutorial, Q&A, etc.)
+* **Customizable Amounts**: Adjust tip amounts for each contribution level
+* **Confidence Scoring**: Assess the reliability of contribution analysis
+* **Automatic Tipping**: Determine tip amount automatically without specifying an explicit amount
 
-**Operational Components**:
-- ✅ Multi-process agent architecture with individual port and PID management
-- ✅ Character-specific configurations for 6 unique agent personalities
-- ✅ Relay Server for bot-to-bot communication (confirmed working)
-- ✅ Message relay between agents (verified through logs)
-- ✅ Message processing and decision making logic (confirmed functioning)
-- ✅ Hybrid memory model active (runtime memory manager + SQLite fallback)
-- ✅ Runtime patching system for dynamic enhancements
-- ✅ Configuration from both environment variables and external files
-- ✅ Direct Telegram API messaging for reliable bot-to-bot communication
-- ✅ Conversation lifecycle management and turn-taking (ConversationManager)
-- ✅ Personality-driven styling and response timing (PersonalityEnhancer)
-- ✅ Typing simulation with realistic delays
+## Installation
 
-**Partially Implemented Components**:
-- ⏳ Autonomous conversation initiation (kickstarting framework)
-- ⏳ Advanced topic steering and LLM-assisted transitions
-- ⏳ Sophisticated conversation flow & follow-up generation
-- ⏳ TypeScript build process (experimental loader)
+```bash
+npm install @elizaos/plugin-aeternity
+```
 
-**Known Issues**:
+## Configuration
 
-## �� Getting Started
+Configure the plugin by setting the following environment variables:
 
-1. Ensure you have the required dependencies:
-   - Bash 4.0+
-   - lsof (for port management)
-   - Node.js 23+
-   - pnpm
-   - standard Unix tools
+```typescript
+const aeternityEnvSchema = {
+  // Wallet secret key (encrypted or hashed)
+  WALLET_SECRET_KEY: string (optional),
+  
+  // Public address
+  AE_WALLET_ADDRESS: string (optional),
+  
+  // Salt for encryption/decryption
+  WALLET_SECRET_SALT: string (optional),
+  
+  // Network node URL
+  AETERNITY_NODE_URL: string (default: 'https://mainnet.aeternity.io'),
+  
+  // Compiler URL for smart contracts
+  AETERNITY_COMPILER_URL: string (default: 'https://compiler.aeternity.io'),
+  
+  // Network ID
+  AETERNITY_NETWORK_ID: string (default: 'ae_mainnet'),
+  
+  // Explorer API URL
+  AETERNITY_EXPLORER_URL: string (default: 'https://explorer.aeternity.io/api'),
+};
+```
 
-2. Set up your agent configuration in the scripts:
-   - Define agents in the `AGENTS` array
-   - Configure port ranges and directories
+## Usage
 
-3. Make the scripts executable:
-   ```bash
-   chmod +x start_agents.sh stop_agents.sh monitor_agents.sh
-   ```
+### Basic Setup
 
-4. Configure environment variables:
-   ```bash
-   # Add this to your .env file or environment
-   export TELEGRAM_GROUP_IDS="-1001234567890,-1009876543210"
-   ```
+```typescript
+import { initializeRuntime } from 'elizaos';
+import { aeternityPlugin } from '@elizaos/plugin-aeternity';
 
-5. Start your agents with the patched system:
-   ```bash
-   # Start relay server
-   cd /root/eliza/relay-server && PORT=4000 node server.js > /root/eliza/logs/relay-server.log 2>&1 &
+// Initialize the plugin
+const runtime = await initializeRuntime({
+  plugins: [aeternityPlugin],
+});
+```
+
+### Key Management
+
+Generate a new key pair:
+
+```typescript
+// Example usage
+const result = await runtime.executeAction('GENERATE_KEY_PAIR', {
+  password: 'securePassword123',
+  securityLevel: 'high', // 'low', 'medium', 'high', or 'tee'
+});
+
+console.log('Public Key:', result.publicKey);
+console.log('Encrypted Private Key:', result.encryptedPrivateKey);
+```
+
+### Transfer AE Tokens
+
+Send AE tokens to another address:
+
+```typescript
+// Example usage
+const result = await runtime.executeAction('TRANSFER_AE', {
+  recipient: 'ak_recipientAddressHere',
+  amount: '1.5', // Amount in AE
+  options: {
+    fee: '0.00002', // Optional custom fee
+  },
+});
+
+console.log('Transaction Hash:', result.hash);
+```
+
+### Tip Telegram Users
+
+Send AE tokens as tips to Telegram users:
+
+```typescript
+// Example usage - with direct wallet address
+const result = await runtime.executeAction('TIP_TELEGRAM_USER', {
+  recipient: 'ak_recipientAddressHere', // Recipient wallet address
+  amount: '0.1', // Amount in AE
+  message: 'Thanks for your helpful answer!', // Optional message
+  chatId: 'your_group_chat_id', // Optional group chat ID for notifications
+});
+
+// With Telegram username
+const result = await runtime.executeAction('TIP_TELEGRAM_USER', {
+  recipient: '@telegramUsername', // Telegram username
+  amount: '0.1', // Amount in AE
+  message: 'Thanks for your helpful answer!', // Optional message
+  chatId: 'your_group_chat_id', // Optional group chat ID for notifications
+});
+```
+
+If the user hasn't registered an address yet:
+1. The bot will send a DM to the user requesting their Aeternity address
+2. The bot will send a message in the group chat notifying the user to check their DMs
+3. The tip will be stored as "pending" (Note: pending tip processing is currently disabled)
+4. When the user responds with their address, the bot will register the address
+
+### Process Address Registration
+
+When a user sends their Aeternity address, register it:
+
+```typescript
+// Example usage
+const result = await runtime.executeAction('PROCESS_ADDRESS_REGISTRATION', {
+  username: 'telegramUsername', // Without @ prefix
+  address: 'ak_recipientAddressHere',
+  chatId: 'your_group_chat_id', // Optional group chat ID for notifications
+});
+
+console.log('Registration successful:', result.success);
+```
+
+### Analyze Contributions
+
+Analyze a contribution description to determine its level and recommended tip amount:
+
+```typescript
+// Example usage
+const result = await runtime.executeAction('ANALYZE_CONTRIBUTION', {
+  description: 'This detailed explanation about smart contract security was very helpful and saved me hours of debugging.',
+  contributor: 'expert_user', // Optional
+  type: 'TECHNICAL_EXPLANATION', // Optional
+  context: 'In response to a question about contract vulnerabilities' // Optional
+});
+
+console.log('Contribution Level:', result.analysis.level);
+console.log('Suggested Tip Amount:', result.suggestedTipAmount);
+console.log('Confidence Score:', result.analysis.confidenceScore);
+```
+
+You can also use contribution descriptions when tipping, without specifying an amount:
+
+```typescript
+// Tip with auto-calculated amount based on contribution description
+const result = await runtime.executeAction('TIP_TELEGRAM_USER', {
+  recipient: '@expert_user',
+  contributionDescription: 'Great explanation of how state channels work. The examples were very clear and helped me understand the concept completely.',
+  message: 'Thank you for your detailed explanation!',
+  chatId: 'your_group_chat_id' // Optional
+});
+
+console.log('Tip Amount:', result.tipAmount);
+console.log('Contribution Level:', result.contributionLevel);
+```
+
+### Customize Tip Amounts
+
+You can customize the tip amounts for each contribution level:
+
+```typescript
+// Get the contribution analyzer provider
+const contributionAnalyzer = await runtime.getProvider('contributionAnalyzer');
+
+// Set custom tip amounts
+contributionAnalyzer.setTipAmounts({
+  minor: '0.2',        // 0.2 AE for minor contributions
+  helpful: '0.75',     // 0.75 AE for helpful contributions
+  valuable: '2.0',     // 2.0 AE for valuable contributions
+  major: '5.0',        // 5.0 AE for major contributions
+  exceptional: '10.0'  // 10.0 AE for exceptional contributions
+});
+```
+
+## Telegram Bot Integration
+
+To use this plugin with a Telegram bot for tipping:
+
+1. Use the ElizaOS Telegram client
+2. Configure the bot to recognize tipping commands
+3. The plugin automatically handles message processing for address registration
+4. Call the TIP_TELEGRAM_USER action when appropriate, providing the group chat ID
+
+Example character configuration:
+```json
+{
+  "name": "AeTipBot",
+  "capabilities": ["can_tip_users", "can_analyze_contributions"],
+  "clients": ["telegram"],
+  "actions": [
+    {
+      "name": "TIP_TELEGRAM_USER",
+      "description": "Tip a user with AE tokens",
+      "plugin": "aeternity"
+    },
+    {
+      "name": "PROCESS_ADDRESS_REGISTRATION",
+      "description": "Register an Aeternity address for a user",
+      "plugin": "aeternity" 
+    },
+    {
+      "name": "ANALYZE_CONTRIBUTION",
+      "description": "Analyze a contribution to determine its value and appropriate tip amount",
+      "plugin": "aeternity"
+    }
+  ]
+}
+```
+
+## Development Notes
+
+### TypeScript Errors
+
+When developing the plugin, you may encounter these TypeScript errors:
+
+1. **Missing elizaos Module**
    
-   # Start agents with patches
-   AGENT_ID=eth_memelord_9000 USE_IN_MEMORY_DB=true node patches/start-agent-with-patches.js --isRoot --characters=/root/eliza/packages/agent/src/characters/eth_memelord_9000.json --clients=@elizaos/client-telegram --plugins=@elizaos/telegram-multiagent --port=3000 --log-level=debug > /root/eliza/logs/eth_patches.log 2>&1 &
-   ```
-
-6. Monitor their status:
-   ```bash
-   # Check relay server health
-   curl http://localhost:4000/health
+   Error: `Cannot find module 'elizaos' or its corresponding type declarations`
    
-   # Check agent logs
-   tail -f /root/eliza/logs/eth_patches.log
+   This error is expected during development as the 'elizaos' module is only available in the ElizaOS runtime environment. We've added mock type definitions in the `src/types` directory to help with development.
+
+2. **ContributionAnalyzerService Constructor Parameters**
+   
+   Error: `Expected 1-2 arguments, but got 0`
+   
+   The ContributionAnalyzerService requires the ElizaOS runtime to be passed in. During development, this parameter is optional to allow for testing, but in the actual ElizaOS environment, it's required.
+
+3. **Action Type Issues**
+
+   Error: `Type 'Action' is not generic`
+
+   The Action type in ElizaOS is being updated. The plugin currently implements a modified version in the index.ts file to handle this.
+
+## Pre-production Testing
+
+You can test the plugin in a pre-production environment using the provided test scripts:
+
+```bash
+# Install dependencies
+pnpm install
+
+# Run the Telegram tipping test script
+pnpm tsx test-telegram-tip.ts
+```
+
+The test script simulates:
+- Address registration for Telegram users
+- Sending tips to registered users
+- Handling unregistered users
+- Using contribution-based tip amounts
+
+Note: The test runs in mock mode, simulating blockchain transactions without requiring a real blockchain connection.
+
+## Production Deployment
+
+For deploying to a production environment, please refer to the [Production Guide](./PRODUCTION_GUIDE.md), which covers:
+
+- Security considerations
+- Environment configuration
+- Deployment steps
+- Production features and monitoring
+- Backup and recovery procedures
+- Troubleshooting common issues
+
+## Provider Access
+
+Access the wallet provider directly:
+
+```typescript
+// Get the wallet provider
+const walletProvider = await runtime.getProvider('aeternityWallet');
+
+// Get wallet address
+const address = await walletProvider.getAddress();
+
+// Get wallet balance
+const balance = await walletProvider.getBalance();
+
+console.log(`Address: ${address}, Balance: ${balance} AE`);
+```
+
+Access the user address service:
+
+```typescript
+// Get the user address service
+const userAddressService = await runtime.getProvider('aeternityUserAddress');
+
+// Get address for a Telegram user
+const address = userAddressService.getAddress('telegramUsername');
+
+// Store an address for a user
+userAddressService.storeAddress('telegramUsername', 'ak_address');
+
+// Check pending tips
+const pendingTips = userAddressService.getPendingTips('telegramUsername');
+```
+
+## How Telegram Tipping Works
+
+1. **User Makes Valuable Contribution** - Someone in your Telegram community shares helpful information
+2. **Bot Sends Tip** - Your bot decides to tip this user with `TIP_TELEGRAM_USER` action
+3. **Group Notification** - Bot announces in the group chat that the user has been tipped and should check their DMs
+4. **Address Request** - The bot sends the user a DM requesting their Aeternity address
+5. **User Registers Address** - User replies with their Aeternity address
+6. **Address Confirmed** - Bot announces in the group that the user has registered their address
+7. **Future Tips** - Next time the user is tipped, their address is already known and tip is processed directly
+
+## Group Chat Notifications
+
+The plugin sends the following notifications to group chats:
+
+1. **When Tipping a User Without Address**:
+   ```
+   @username, someone wants to tip you with AE tokens! I've sent you a direct message - please check your DMs and reply with your Aeternity address to receive your tip.
    ```
 
-## 🔍 Troubleshooting
+2. **When a User Registers an Address**:
+   ```
+   @username has registered their Aeternity address and is now ready to receive tips! 🎉
+   ```
 
-| Problem | Solution |
-|---------|----------|
-| Agent fails to start | Check logs with `tail -f /root/eliza/logs/*_patches.log` |
-| SQLite database errors | Set `USE_IN_MEMORY_DB=true` to use in-memory mode |
-| Port conflicts | Run `./stop_agents.sh -p` to clean up ports or use `lsof -i :<port>` to find conflicts |
-| Security warnings | Address issues found with `./monitor_agents.sh -S` |
-| Agent unresponsive | Restart with `pkill -f "node patches/start-agent" && ./start-agents.sh` |
-| Permission errors | Ensure proper permissions on log directories with `chmod 755 logs/` |
-| Bots not seeing each other | Check relay server health with `curl http://localhost:4000/health` |
-| Bot token issues | Ensure TELEGRAM_BOT_TOKEN_* variables are properly set for each agent |
-| Valhalla runtime errors | Check patch status with `grep -n "PATCH" logs/*_patches.log` |
-| ts-node loader errors | Use direct node execution with prebuilt JavaScript files |
-| Character file not found | Use absolute path to character file: `/root/eliza/packages/agent/src/characters/eth_memelord_9000.json` |
+3. **When Sending a Tip to a User with Registered Address**:
+   ```
+   Tip sent! @username has received 0.1 AE with message: "Thanks for your help!" (TX: ak_2tfrsj5...)
+   ```
+
+## Security Best Practices
+
+1. **Private Key Storage**  
+   * Always encrypt private keys when storing
+   * Use environment variables or secure secret storage
+   * Consider hardware wallets for production use
+
+2. **Transaction Verification**  
+   * Verify transaction parameters before signing
+   * Implement confirmation steps for high-value transactions
+   * Use simulation to preview transaction outcomes
+
+3. **Network Configuration**  
+   * Use secure, trusted RPC endpoints
+   * Consider private nodes for production environments
+   * Implement connection fallbacks
+
+## Development Roadmap
+
+### Current (Phase 1)
+- ✅ Private key management
+- ✅ AE transfers
+- ✅ Telegram tipping interface
+- ✅ Address registration via DM
+- ⏳ Pending tip handling (temporarily disabled)
+- ✅ Group chat notifications
+- ✅ Contribution analysis and automatic tip amount determination
+
+### Next (Phase 2) - Coming Soon
+- ⏳ AEX-9 token deployment
+- ⏳ Token transfers
+- ⏳ Token balance management
+
+### Future (Phase 3)
+- 📅 Superhero DEX integration
+- 📅 Price fetching
+- 📅 Trading operations
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Connection Errors**
+
+```
+Error: Failed to connect to Aeternity node
+```
+
+* Verify network connectivity
+* Check node URL configuration
+* Ensure node is operational
+
+2. **Transaction Failures**
+
+```
+Error: Transaction rejected
+```
+
+* Check account balance
+* Verify recipient address format
+* Ensure proper fee configuration
+
+3. **Key Management Issues**
+
+```
+Error: Failed to decrypt private key
+```
+
+* Verify encryption password is correct
+* Check salt configuration
+* Ensure private key format is valid
+
+4. **Telegram Integration Issues**
+
+```
+Error: Could not request address from @username
+```
+
+* Ensure Telegram client is properly configured
+* Verify the user accepts DMs from bots
+* Check if the username exists
+
+5. **Action Type Errors**
+
+```
+TypeError: action.validate is not a function
+```
+
+* This is a known issue related to action type definitions
+* The current fix is implemented in index.ts
+
+## Development
+
+For local development:
+
+```bash
+# Clone the repository
+git clone https://github.com/your-username/plugin-aeternity.git
+
+# Install dependencies
+cd plugin-aeternity
+npm install
+
+# Build the plugin
+npm run build
+
+# Run tests
+npm test
+```
+
+## Credits
+
+This plugin integrates with and builds upon several key technologies:
+
+* **Aeternity** - The core blockchain platform
+* **aepp-sdk** - Official Aeternity JavaScript SDK
+* **crypto-js** - Encryption library
+
+Special thanks to:
+
+* The Aeternity developer community
+* The Eliza community for their contributions and feedback
+
+For more information about Aeternity blockchain capabilities:
+
+* [Aeternity Documentation](https://docs.aeternity.io/)
+* [Aeternity GitHub Repository](https://github.com/aeternity)
+
+## License
+
+This plugin is part of the Eliza project. See the main project repository for license information.
+
+## SDK Version Compatibility
+
+This plugin is compatible with `@aeternity/aepp-sdk` version 13.2.2. Using other versions may require adjustments to the implementation, particularly in the wallet provider and transaction services.
+
+The plugin has been updated to work with the changes in the Aeternity SDK, including:
+- Using the new constructor pattern for `MemoryAccount`, `Node`, and `Universal`
+- Implementing required account methods like `signTypedData` and `signDelegation` 
+- Supporting the `sk_` prefix format for secret keys
+
+## Dependencies and Compatibility
+
+### Aeternity SDK Integration
+
+This plugin is compatible with `@aeternity/aepp-sdk` version 13.2.2. Using other versions may require adjustments to the implementation, particularly in the wallet provider and transaction services.
+
+When developing locally, you have two options:
+1. Install the SDK from npm: `pnpm add @aeternity/aepp-sdk@13.2.2`
+2. Clone and link the SDK repository:
+   ```bash
+   git clone https://github.com/aeternity/aepp-sdk-js.git
+   cd aepp-sdk-js
+   npm install
+   npm run build
+   cd /path/to/your/project
+   mkdir -p node_modules/@aeternity
+   ln -s /path/to/aepp-sdk-js node_modules/@aeternity/aepp-sdk
+   ```
+
+### TypeScript Support
+
+The plugin includes TypeScript declarations for the Aeternity SDK, which may be missing in the SDK itself. These declarations are located in `src/types/aeternity-sdk.d.ts` and ensure proper type checking for the SDK functions.
+
+### Mock Mode for Development
+
+The plugin includes a mock mode for development that simulates Aeternity blockchain interactions without making actual transactions. This is useful for testing without requiring real tokens or network connectivity. 
+
+In the `walletProvider.ts` file, we automatically fallback to mock mode if the SDK initialization fails, allowing development and testing to continue without requiring a proper SDK setup.
+
+## License
+
+ISC
 
 ---
 
