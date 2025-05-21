@@ -76,16 +76,24 @@ export class DbCacheAdapter implements ICacheAdapter {
         private agentId: UUID
     ) { }
 
+    private namespaceKey(key: string): string {
+        return `${CacheKeyPrefix.AGENT_CACHE}_${this.agentId}_${key}`;
+    }
+
     async get(key: string): Promise<string | undefined> {
-        return this.db.getCache({ agentId: this.agentId, key });
+        const namespacedKey = this.namespaceKey(key);
+        const result = await this.db.get(namespacedKey);
+        return result === null ? undefined : result;
     }
 
     async set(key: string, value: string): Promise<void> {
-        await this.db.setCache({ agentId: this.agentId, key, value });
+        const namespacedKey = this.namespaceKey(key);
+        await this.db.set(namespacedKey, value);
     }
 
     async delete(key: string): Promise<void> {
-        await this.db.deleteCache({ agentId: this.agentId, key });
+        const namespacedKey = this.namespaceKey(key);
+        await this.db.delete(namespacedKey);
     }
 }
 

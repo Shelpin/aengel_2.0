@@ -31,7 +31,7 @@ const createStream = () => {
     if (raw) {
         return undefined;
     }
-    return pretty.default({
+    return pretty({
         colorize: true,
         translateTime: "yyyy-mm-dd HH:MM:ss",
         ignore: "pid,hostname",

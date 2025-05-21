@@ -1,7 +1,10 @@
 {
   "name": "ængel",
   "username": "ængel",
-  "plugins": [],
+  "plugins": [
+    "@elizaos/plugin-twitter",
+    "@elizaos/plugin-aeternity"
+  ],
   "clients": [
     "@elizaos/telegram-client"
   ],

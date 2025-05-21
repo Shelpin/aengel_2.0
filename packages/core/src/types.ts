@@ -245,7 +245,10 @@ export enum KnowledgeScope {
     SHARED = 'shared',
     PRIVATE = 'private'
 }
-export enum CacheKeyPrefix { PLACEHOLDER = "PLACEHOLDER" }
+export enum CacheKeyPrefix {
+    AGENT_CACHE = "agent_cache",
+    TWITTER_COOKIES = "twitter_cookies",
+}
 
 export interface IDatabaseAdapter {
     connect(): Promise<void>;
@@ -335,15 +338,16 @@ export interface IAgentRuntime {
     serverUrl?: string;
     databaseAdapter?: IDatabaseAdapter;
     settings?: Map<string, string>;
-    adapters?: Plugin[]; // Changed from any to Plugin[]
+    adapters?: Plugin[];
     cacheManager?: ICacheManager;
     clients: { [key: string]: ClientInstance; };
     actions?: Action[];
     character: Character;
     token?: string;
     getSetting(key: string): string | undefined;
+    getCache(): ICacheManager | null;
     logger: Logger;
-    messageManager: IMemoryManager; // This was IMemoryManager from @elizaos/types
+    messageManager: IMemoryManager;
     modelProvider: ModelProviderName;
     imageModelProvider?: ModelProviderName;
     fetch?: FetchFunction;
@@ -353,6 +357,7 @@ export interface IAgentRuntime {
     getConversationLength(): number;
     stop(): Promise<void>;
     ensureConnection(userId: string, roomId: string, userName?: string, userScreenName?: string, source?: string): Promise<void>;
+    ensureAgentExists(agentId?: string): Promise<void>;
     processActions(message: any, responses: Memory[], state?: any, callback?: any): Promise<void>;
     evaluate(message: any, state?: any, didRespond?: boolean, callback?: any): Promise<string[] | null>;
     handleMessage(message: any): Promise<void>;

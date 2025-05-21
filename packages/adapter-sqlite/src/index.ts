@@ -71,6 +71,17 @@ export class SQLiteAdapter implements IDatabaseAdapter {
             this.db.exec(`CREATE INDEX IF NOT EXISTS idx_memories_roomId_createdAt ON memories (roomId, createdAt);`);
             this.db.exec(`CREATE INDEX IF NOT EXISTS idx_memories_agentId_roomId ON memories (agentId, roomId);`);
 
+            // Add cache_items table
+            this.db.exec(`
+                CREATE TABLE IF NOT EXISTS cache_items (
+                    key TEXT PRIMARY KEY,
+                    value TEXT,
+                    expiresAt INTEGER
+                );
+            `);
+            // Optional: Index on expiresAt if TTL-based cleanup is implemented later
+            // this.db.exec(`CREATE INDEX IF NOT EXISTS idx_cache_items_expiresAt ON cache_items (expiresAt);`);
+
             logger.info("[SQLiteAdapter] Database schema initialized successfully.");
         } catch (error) {
             logger.error("[SQLiteAdapter] Error initializing database schema:", error);
@@ -347,25 +358,80 @@ export class SQLiteAdapter implements IDatabaseAdapter {
         return Promise.resolve();
     }
 
-    // --- Methods for IDatabaseCacheAdapter (stubs for now) ---
+    // --- CACHE METHOD IMPLEMENTATIONS ---
     async get(key: string): Promise<string | null> {
-        logger.warn("SQLiteAdapter.get (for cache) not implemented", key);
-        return null;
+        if (!this.db || !this.connected) {
+            logger.error("[SQLiteAdapter_Cache] Cannot get, database not connected.");
+            throw new Error("Database not connected");
+        }
+        logger.debug(`[SQLiteAdapter_Cache] Getting key: ${key}`);
+        try {
+            const stmt = this.db.prepare("SELECT value FROM cache_items WHERE key = ?");
+            const row = stmt.get(key) as { value: string } | undefined;
+            // TODO: Check expiresAt if TTL is implemented
+            return row ? row.value : null;
+        } catch (error) {
+            logger.error(`[SQLiteAdapter_Cache] Error getting key ${key}:`, error);
+            return null; // Or throw
+        }
     }
 
     async set(key: string, value: string, ttl?: number): Promise<void> {
-        logger.warn("SQLiteAdapter.set (for cache) not implemented", key, value, ttl);
-        return Promise.resolve();
+        if (!this.db || !this.connected) {
+            logger.error("[SQLiteAdapter_Cache] Cannot set, database not connected.");
+            throw new Error("Database not connected");
+        }
+        logger.debug(`[SQLiteAdapter_Cache] Setting key: ${key}`); // Value not logged for brevity/security
+        try {
+            const expiresAt = ttl ? Date.now() + ttl * 1000 : null;
+            const stmt = this.db.prepare(
+                "INSERT OR REPLACE INTO cache_items (key, value, expiresAt) VALUES (?, ?, ?)"
+            );
+            stmt.run(key, value, expiresAt);
+        } catch (error) {
+            logger.error(`[SQLiteAdapter_Cache] Error setting key ${key}:`, error);
+            // Or throw
+        }
     }
 
     async delete(key: string): Promise<void> {
-        logger.warn("SQLiteAdapter.delete (for cache) not implemented", key);
-        return Promise.resolve();
+        if (!this.db || !this.connected) {
+            logger.error("[SQLiteAdapter_Cache] Cannot delete, database not connected.");
+            throw new Error("Database not connected");
+        }
+        logger.debug(`[SQLiteAdapter_Cache] Deleting key: ${key}`);
+        try {
+            const stmt = this.db.prepare("DELETE FROM cache_items WHERE key = ?");
+            const result = stmt.run(key);
+            if (result.changes > 0) {
+                logger.debug(`[SQLiteAdapter_Cache] Successfully deleted key: ${key}, changes: ${result.changes}`);
+            } else {
+                logger.debug(`[SQLiteAdapter_Cache] Key not found for deletion (or no changes made): ${key}`);
+            }
+        } catch (error) {
+            logger.error(`[SQLiteAdapter_Cache] Error deleting key ${key}:`, error);
+            // Or throw
+        }
     }
 
     async clear(namespace?: string): Promise<void> {
-        logger.warn("SQLiteAdapter.clear (for cache) not implemented", namespace);
-        return Promise.resolve();
+        if (!this.db || !this.connected) {
+            logger.error("[SQLiteAdapter_Cache] Cannot clear, database not connected.");
+            throw new Error("Database not connected");
+        }
+        logger.debug(`[SQLiteAdapter_Cache] Clearing cache with namespace: ${namespace || ' (full clear)'}`);
+        try {
+            if (namespace) {
+                const stmt = this.db.prepare("DELETE FROM cache_items WHERE key LIKE ?");
+                stmt.run(`${namespace}%`); // SQL LIKE pattern
+            } else {
+                const stmt = this.db.prepare("DELETE FROM cache_items");
+                stmt.run();
+            }
+        } catch (error) {
+            logger.error(`[SQLiteAdapter_Cache] Error clearing cache (namespace: ${namespace}):`, error);
+            // Or throw
+        }
     }
 }
 

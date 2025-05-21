@@ -100,6 +100,11 @@ export class AgentRuntime implements IAgentRuntime {
         return this.settings.get(key) || process.env[key];
     }
 
+    getCache(): ICacheManager | null {
+        this.logger.debug("AgentRuntime.getCache() called.");
+        return this.cacheManager;
+    }
+
     async initialize(): Promise<void> {
         this.logger.info("AgentRuntime initializing...");
         this.clients = {};
@@ -191,6 +196,41 @@ export class AgentRuntime implements IAgentRuntime {
 
     async ensureConnection(userId: string, roomId: string, userName?: string, userScreenName?: string, source?: string): Promise<void> {
         this.logger.warn("AgentRuntime.ensureConnection() called but not implemented.", { userId, roomId, source }); // Direct use
+        return Promise.resolve();
+    }
+
+    async ensureAgentExists(agentIdInput?: string | Character): Promise<void> {
+        let agentToCheck: string;
+        if (typeof agentIdInput === 'string') {
+            agentToCheck = agentIdInput;
+        } else if (agentIdInput && typeof agentIdInput === 'object' && agentIdInput.id) {
+            agentToCheck = agentIdInput.id; 
+            this.logger.warn(`ensureAgentExists received a Character object, using its id: ${agentToCheck}`);
+        } else if (agentIdInput && typeof agentIdInput === 'object' && (agentIdInput as any).name) {
+            // Fallback if .id is not present but .name is (should ideally be UUID)
+            agentToCheck = stringToUuid((agentIdInput as any).name);
+            this.logger.warn(`ensureAgentExists received an object without .id, using stringToUuid of its name: ${agentToCheck}`);
+        } else {
+            agentToCheck = this.agentId;
+            this.logger.warn(`ensureAgentExists received invalid input or was called with no args, defaulting to current runtime agentId: ${agentToCheck}`);
+        }
+
+        this.logger.info(`AgentRuntime.ensureAgentExists() called for agentId: ${agentToCheck}. Basic implementation, no DB check yet.`);
+        // TODO: Implement database check to see if an agent record exists for agentToCheck
+        // For example: 
+        // if (this.databaseAdapter && typeof (this.databaseAdapter as any).getAgentById === 'function') { // Check if method exists
+        //     try {
+        //        const agentRecord = await (this.databaseAdapter as any).getAgentById(agentToCheck); 
+        //        if (!agentRecord) {
+        //            this.logger.warn(`Agent record for ${agentToCheck} not found. Consider creating one.`);
+        //            // await this.databaseAdapter.createAgent({ id: agentToCheck, name: this.character?.name || agentToCheck });
+        //        }
+        //     } catch (dbError) {
+        //        this.logger.error(`Database error in ensureAgentExists when calling getAgentById for ${agentToCheck}:`, dbError);
+        //     }
+        // } else if (this.databaseAdapter) {
+        //     this.logger.warn(`ensureAgentExists: databaseAdapter is present but does not have getAgentById method.`);
+        // }
         return Promise.resolve();
     }
 

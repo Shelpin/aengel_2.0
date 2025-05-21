@@ -413,21 +413,39 @@ async function handlePluginImporting(plugins: string[]): Promise<Plugin[]> {
                 elizaLogger.debug(`[PLUGIN_IMPORT_DEBUG] Entering fallback logic for plugin: ${plugin}`);
                 try {
                     const pkgParts = plugin.split('/');
-                    const pkgName = pkgParts.length > 1 ? pkgParts[1] : pkgParts[0]; // Handle cases like "my-plugin" vs "@scope/my-plugin"
-                    const workspaceEntry = path.resolve(
-                        __dirname_agent,             // .../packages/agent/dist
-                        '../../..',            // up to /root/eliza
+                    const pkgName = pkgParts.length > 1 ? pkgParts[1] : pkgParts[0];
+
+                    // First fallback attempt (original logic)
+                    let workspaceEntry = path.resolve(
+                        __dirname_agent, // .../packages/agent/dist
+                        '../../..', // up to /root/eliza
                         'packages',
-                        pkgName,               // e.g., plugin-bootstrap
-                        'dist',                // Look in dist first
-                        'index.js'             // Common entry point
+                        pkgName, // e.g., plugin-bootstrap
+                        'dist',
+                        'index.js'
                     );
-                     elizaLogger.debug(`[PLUGIN_IMPORT_DEBUG] Fallback workspace path: ${workspaceEntry}`);
+                    elizaLogger.debug(`[PLUGIN_IMPORT_DEBUG] First fallback workspace path: ${workspaceEntry}`);
                     try {
-                         importedModule = await import(workspaceEntry);
+                        importedModule = await import(workspaceEntry);
                     } catch (workspaceError) {
-                        elizaLogger.error(`Plugin import failed for ${plugin} (direct and workspace attempts). Direct error: ${importError}. Workspace error: ${workspaceError}`);
-                        continue; // Skip this plugin
+                        elizaLogger.warn(`[PLUGIN_IMPORT_DEBUG] First fallback failed for ${plugin}. Error: ${workspaceError}. Trying 'packages/plugins/' next.`);
+                        
+                        // Second fallback attempt (for plugins in packages/plugins/)
+                        workspaceEntry = path.resolve(
+                            __dirname_agent, // .../packages/agent/dist
+                            '../../..', // up to /root/eliza
+                            'packages/plugins', // Check inside packages/plugins
+                            pkgName, // e.g., plugin-twitter
+                            'dist',
+                            'index.js'
+                        );
+                        elizaLogger.debug(`[PLUGIN_IMPORT_DEBUG] Second fallback workspace path: ${workspaceEntry}`);
+                        try {
+                            importedModule = await import(workspaceEntry);
+                        } catch (secondWorkspaceError) {
+                            elizaLogger.error(`Plugin import failed for ${plugin} (direct and both workspace attempts). Direct: ${importError}. Workspace1: ${workspaceError}. Workspace2: ${secondWorkspaceError}`);
+                            continue; // Skip this plugin
+                        }
                     }
                 } catch (splitError) {
                     elizaLogger.error(`[PLUGIN_IMPORT_ERROR] Error during path construction for plugin: ${plugin}. Error:`, splitError);
@@ -436,7 +454,20 @@ async function handlePluginImporting(plugins: string[]): Promise<Plugin[]> {
             }
 
             // Standardize access to the plugin instance (default export or named export)
-            const pluginInstance = importedModule?.default || importedModule?.[Object.keys(importedModule)[0]];
+            let pluginInstance = importedModule?.default || importedModule?.[Object.keys(importedModule)[0]];
+
+            // SPECIAL HANDLING FOR @elizaos/plugin-twitter
+            if (plugin === '@elizaos/plugin-twitter' && importedModule?.TwitterService && typeof importedModule.TwitterService.start === 'function') {
+                elizaLogger.info('[PLUGIN_IMPORT_DEBUG] Applying special handling for @elizaos/plugin-twitter, using TwitterService.start via wrapper.');
+                pluginInstance = {
+                    name: '@elizaos/plugin-twitter', // Keep the original name for identification
+                    initialize: async (runtime: IAgentRuntime) => {
+                        elizaLogger.info(`[PLUGIN_IMPORT_DEBUG] Wrapper: Calling TwitterService.start for ${plugin}`);
+                        return importedModule.TwitterService.start(runtime);
+                    }
+                };
+            }
+            // END SPECIAL HANDLING
 
             if (pluginInstance && (typeof pluginInstance === 'function' || typeof pluginInstance === 'object')) {
                 // It's common for plugins to be factory functions or direct objects.
@@ -610,7 +641,8 @@ export async function createAgent(
     token: string | undefined,
     initializedPluginsAndClients: Provider[] // Combined list of actual client instances and plugin providers
 ): Promise<AgentRuntime> {
-    elizaLogger.log(`Creating runtime for character ${character.name}`);
+    const agentIdForRuntime = character.id || stringToUuid(character.name);
+    elizaLogger.log(`Creating runtime for character ${character.name} with agentId: ${agentIdForRuntime}`);
     // Plugins (including clients) are now passed in initializedPluginsAndClients
     // The AgentRuntime constructor expects these in its 'plugins' property.
 
@@ -649,6 +681,7 @@ export async function createAgent(
 
 
     return new AgentRuntime({
+        agentId: agentIdForRuntime,
         token: token || '',
         modelProvider: character.modelProvider,
         evaluators: character.evaluators || [], // Use evaluators from character if present
