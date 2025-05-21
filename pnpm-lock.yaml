@@ -307,12 +307,15 @@ importers:
         specifier: workspace:*
         version: link:../types
       better-sqlite3:
-        specifier: ^8.6.0
+        specifier: ^8.7.0
         version: 8.7.0
       sqlite-vec:
         specifier: ^0.1.7-alpha.2
         version: 0.1.7-alpha.2
     devDependencies:
+      '@types/better-sqlite3':
+        specifier: ^7.6.12
+        version: 7.6.13
       '@types/node':
         specifier: ^20.8.0
         version: 20.17.44

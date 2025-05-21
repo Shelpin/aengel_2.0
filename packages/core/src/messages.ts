@@ -128,3 +128,23 @@ export const formatTimestamp = (messageDate: number) => {
         return `${days} day${days !== 1 ? "s" : ""} ago`;
     }
 };
+
+// New function to format messages for LLM API
+export interface LlmMessage {
+    role: 'user' | 'assistant' | 'system';
+    content: string;
+}
+
+export function formatMessagesForLlm(memories: Memory[], agentId: string): LlmMessage[] {
+    if (!memories || memories.length === 0) {
+        return [];
+    }
+    // Ensure messages are in chronological order (oldest first)
+    const sortedMemories = [...memories].sort((a, b) => a.createdAt - b.createdAt);
+
+    return sortedMemories.map(memory => {
+        const role = memory.userId === agentId ? 'assistant' : 'user';
+        const content = memory.content?.text || '';
+        return { role, content } as LlmMessage;
+    }).filter(msg => msg.content.trim() !== '');
+}

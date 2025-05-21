@@ -1,5 +1,8 @@
 import { IAgentRuntime, ClientInstance, Memory, IMemoryManager, Character, ICacheManager, IRAGKnowledgeManager, Action, Evaluator, HandlerCallback, ModelProviderName, Logger as CoreLoggerType, IDatabaseAdapter, Plugin, State, FetchFunction } from "./types.js";
+import { MemoryManager } from './memory.js';
+import { formatMessagesForLlm, LlmMessage } from './messages.js';
 import { elizaLogger as globalLogger } from "./logger.js";
+import { stringToUuid } from "./uuid.js";
 
 // Re-export for backward compatibility
 export type DatabaseAdapter = IDatabaseAdapter;
@@ -36,7 +39,7 @@ export interface RuntimeConfig {
 export class AgentRuntime implements IAgentRuntime {
     agentId: string;
     serverUrl: string;
-    databaseAdapter: IDatabaseAdapter;
+    databaseAdapter?: IDatabaseAdapter;
     token: string | undefined;
     modelProvider: ModelProviderName;
     imageModelProvider: ModelProviderName;
@@ -60,12 +63,22 @@ export class AgentRuntime implements IAgentRuntime {
     constructor(config: RuntimeConfig) {
         this.agentId = config.agentId || "agent";
         this.serverUrl = config.serverUrl || "https://example.com";
-        this.databaseAdapter = config.databaseAdapter || {} as IDatabaseAdapter;
+        this.databaseAdapter = config.databaseAdapter;
         this.logger = globalLogger; // Use imported elizaLogger
 
         if (!config.character) throw new Error("Character configuration is required in RuntimeConfig");
         this.character = config.character;
-        this.messageManager = config.messageManager || {} as IMemoryManager;
+
+        if (config.messageManager) {
+            this.messageManager = config.messageManager;
+        } else if (this.databaseAdapter) {
+            this.logger.info("Initializing MessageManager in constructor as databaseAdapter was provided in config.");
+            this.messageManager = new MemoryManager({ runtime: this, tableName: "memories" });
+        } else {
+            this.logger.warn("MessageManager not initialized in constructor: No messageManager in config and no databaseAdapter in config yet.");
+            this.messageManager = undefined as any;
+        }
+
         this.modelProvider = config.modelProvider;
         this.token = config.token;
         this.imageModelProvider = config.imageModelProvider || 'openai' as ModelProviderName;
@@ -88,9 +101,18 @@ export class AgentRuntime implements IAgentRuntime {
     }
 
     async initialize(): Promise<void> {
-        this.logger.info("AgentRuntime initializing..."); // Direct use of this.logger
+        this.logger.info("AgentRuntime initializing...");
         this.clients = {};
         this.loadedPlugins = [];
+
+        if (!this.messageManager && this.databaseAdapter) {
+            this.logger.info("Initializing MessageManager in initialize() as databaseAdapter is now available.");
+            this.messageManager = new MemoryManager({ runtime: this, tableName: "memories" });
+        } else if (!this.messageManager && !this.databaseAdapter) {
+            this.logger.error("CRITICAL: Cannot initialize MessageManager in initialize() - databaseAdapter is still not available!");
+        } else if (this.messageManager) {
+            this.logger.info("MessageManager was already initialized (e.g., in constructor or passed via config).");
+        }
 
         if (this.plugins && Array.isArray(this.plugins)) {
             this.logger.info(`Found ${this.plugins.length} providers to process.`); // Direct use
@@ -249,6 +271,7 @@ export async function handleMessageFunction(this: AgentRuntime, message: any): P
 
     const incomingText = message.text;
     const chatId = message.chat?.id || message.chat_id;
+    const userId = message.from?.id?.toString();
 
     if (!chatId) {
         this.logger.error("❌ Message does not have a valid chat.id or chat_id. Cannot process.");
@@ -325,10 +348,47 @@ export async function handleMessageFunction(this: AgentRuntime, message: any): P
 
                     systemPrompt += " Respond naturally based on this comprehensive persona.";
 
-                    const userPrompt = incomingText;
+                    const userPromptContent = incomingText;
+
+                    // Fetch conversation history
+                    let historyMessages: LlmMessage[] = [];
+                    const conversationHistoryLength = parseInt(this.getSetting('CONVERSATION_HISTORY_LENGTH') || '10');
+
+                    if (this.messageManager && typeof this.messageManager.getMemories === 'function') {
+                        if (!chatId) {
+                            this.logger.error("[HISTORY] Cannot fetch history: chatId is undefined.");
+                        } else {
+                            try {
+                                this.logger.debug(`[HISTORY] Fetching last ${conversationHistoryLength} messages for roomId: ${chatId}`);
+                                const recentMemories: Memory[] = await this.messageManager.getMemories({
+                                    roomId: chatId, // Use chatId as roomId
+                                    count: conversationHistoryLength 
+                                });
+                                this.logger.debug(`[HISTORY] Retrieved ${recentMemories.length} memories.`);
+                                // The agent's own ID is needed to correctly assign 'assistant' role
+                                historyMessages = formatMessagesForLlm(recentMemories, this.agentId); 
+                                this.logger.debug(`[HISTORY] Formatted ${historyMessages.length} messages for LLM.`);
+                            } catch (historyError: any) {
+                                this.logger.error("[HISTORY] Error fetching or formatting conversation history:", historyError.message);
+                            }
+                        }
+                    } else {
+                        this.logger.warn("[HISTORY] messageManager or getMemories is not available. Proceeding without history.");
+                    }
+                    
+                    // Construct the full messages payload for LLM
+                    const llmMessagesPayload: LlmMessage[] = [
+                        { role: "system", content: systemPrompt }
+                    ];
+                    historyMessages.forEach(histMsg => llmMessagesPayload.push(histMsg)); // Add history
+                    llmMessagesPayload.push({ role: "user", content: userPromptContent }); // Add current user message
 
                     this.logger.debug("[LLM] System Prompt for", modelProvider, ":", systemPrompt.substring(0, 150) + "...");
-                    this.logger.debug("[LLM] User Prompt for", modelProvider, ":", userPrompt.substring(0, 150) + "...");
+                    // Log history if present
+                    if (historyMessages.length > 0) {
+                        this.logger.debug(`[LLM] Including ${historyMessages.length} historical messages.`);
+                    }
+                    this.logger.debug("[LLM] User Prompt for", modelProvider, ":", userPromptContent.substring(0, 150) + "...");
                     this.logger.info("[LLM] Attempting API call to", apiUrl, "with model", modelName);
 
                     const fetchFn = this.fetch || fetch;
@@ -340,10 +400,7 @@ export async function handleMessageFunction(this: AgentRuntime, message: any): P
                         },
                         body: JSON.stringify({
                             model: modelName,
-                            messages: [
-                                { role: "system", content: systemPrompt },
-                                { role: "user", content: userPrompt }
-                            ],
+                            messages: llmMessagesPayload, // MODIFIED: Use the full payload
                             max_tokens: 1024,
                             temperature: 0.7
                         })
@@ -376,21 +433,60 @@ export async function handleMessageFunction(this: AgentRuntime, message: any): P
 
     this.logger.debug("Generated responseText after LLM attempt:", responseText);
 
-    const telegramClient = (this.clients as any)?.telegram; // Assuming telegram client for now
+    // Store the incoming user message IF it hasn't been stored already by the client
+    // This is a safeguard. Ideally, the client or a pre-processor handles this.
+    if (this.messageManager && userId && chatId && incomingText) {
+        try {
+            const userMemory: Memory = {
+                id: message.message_id?.toString() || stringToUuid(userId + incomingText + Date.now()),
+                userId: userId, // The actual user's ID
+                roomId: chatId,
+                content: { text: incomingText },
+                createdAt: message.date ? message.date * 1000 : Date.now(), // Convert Telegram date to ms
+                importance: 0.5, // Default importance
+                lastAccessed: Date.now()
+            };
+            await this.messageManager.createMemory(userMemory);
+            this.logger.debug(`[MEMORY] Saved incoming user message to memory store. ID: ${userMemory.id}`);
+        } catch (memError: any) {
+            this.logger.error(`[MEMORY] Failed to save user message to memory: ${memError.message}`);
+        }
+    }
+
+    const telegramClient = (this.clients as any)?.telegram; 
 
     if (telegramClient && typeof telegramClient.sendMessage === 'function') {
         if (responseText && responseText.trim() !== '') {
-            if (!chatId) { // Check chatId again before sending
+            if (!chatId) { 
                  this.logger.error("❌ FATAL: Cannot send response because chatId is still missing before sending.");
             } else {
                 this.logger.info("Attempting to send LLM response via client to chatID:", chatId);
                 try {
-                    // Adapting to potential sendMessage signature: (chatId: string, text: string, options?: any)
-                    // Or (message: { chat_id: string, text: string, ... })
-                    // For now, sending chatId and text as distinct arguments, which matches TelegramClient's current expectation.
                     await telegramClient.sendMessage(chatId, responseText, { action: 'send_llm_response', originalMessage: message });
                     this.logger.info("✅ Successfully sent LLM response to chatID:", chatId);
-                } catch (error: any) { // Typed caught error
+
+                    // NOW SAVE AGENT'S RESPONSE TO MEMORY
+                    if (this.messageManager) {
+                        try {
+                            const agentMemory: Memory = {
+                                id: stringToUuid(this.agentId + responseText + Date.now()), // Create a new UUID
+                                userId: this.agentId, // Agent's own ID
+                                roomId: chatId,
+                                content: { text: responseText },
+                                createdAt: Date.now(),
+                                importance: 0.5, // Default importance
+                                lastAccessed: Date.now()
+                            };
+                            await this.messageManager.createMemory(agentMemory);
+                            this.logger.debug(`[MEMORY] Saved agent response to memory store. ID: ${agentMemory.id}`);
+                        } catch (memError: any) {
+                            this.logger.error(`[MEMORY] Failed to save agent message to memory: ${memError.message}`);
+                        }
+                    } else {
+                        this.logger.warn("[MEMORY] messageManager not available, cannot save agent response.");
+                    }
+
+                } catch (error: any) { 
                     this.logger.error("❌ Error sending LLM response via Telegram client:", error.message, { stack: error.stack });
                 }
             }

@@ -3,7 +3,7 @@
   "username": "ængel",
   "plugins": [],
   "clients": [
-    "telegram"
+    "@elizaos/telegram-client"
   ],
   "modelProvider": "openai",
   "settings": {
