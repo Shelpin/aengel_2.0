@@ -6,6 +6,7 @@
 
 # @elizaos/plugin-aeternity
 
+
 æeternity blockchain plugin for Eliza OS that provides essential services and actions for private key management, token operations, and Telegram tipping.
 
 > **Current Status:** Phase 1 implementation is in progress. The plugin's core tipping functionality has been implemented but some features like pending tip processing are currently disabled. See [Pre-Production Environment](#pre-production-environment) section for testing instructions.
