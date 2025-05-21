@@ -1,0 +1,21 @@
+{
+  "extends": "../../tsconfig.build.base.json",
+  "compilerOptions": {
+    "isolatedModules": false,
+    "rootDir": "src",
+    "outDir": "dist",
+    "skipLibCheck": true,
+    "declaration": true,
+    "composite": true,
+    "noEmitOnError": true,
+    "sourceMap": true
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "src/test_resources/**/*",
+    "src/**/__tests__/**/*"
+  ],
+  "references": []
+}

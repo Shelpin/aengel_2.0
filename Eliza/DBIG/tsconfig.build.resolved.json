@@ -1,0 +1,318 @@
+{
+  "cli": {
+    "error": "No tsconfig.build.json found"
+  },
+  "@elizaos/core": {
+    "compilerOptions": {
+      "target": "ES2021",
+      "module": "nodenext",
+      "moduleResolution": "nodenext",
+      "lib": [
+        "es2021",
+        "dom"
+      ],
+      "strict": true,
+      "esModuleInterop": true,
+      "skipLibCheck": true,
+      "forceConsistentCasingInFileNames": true,
+      "outDir": "./dist",
+      "rootDir": "./src",
+      "declaration": true,
+      "baseUrl": ".",
+      "composite": true,
+      "resolveJsonModule": true,
+      "allowSyntheticDefaultImports": true,
+      "paths": {
+        "*": [
+          "src/*"
+        ]
+      }
+    },
+    "include": [
+      "src/**/*"
+    ],
+    "exclude": [
+      "dist",
+      "node_modules"
+    ]
+  },
+  "@elizaos/adapter-sqlite": {
+    "compilerOptions": {
+      "target": "ES2021",
+      "module": "nodenext",
+      "moduleResolution": "nodenext",
+      "lib": [
+        "es2021",
+        "dom"
+      ],
+      "strict": true,
+      "esModuleInterop": true,
+      "skipLibCheck": true,
+      "forceConsistentCasingInFileNames": true,
+      "composite": true,
+      "declaration": true,
+      "declarationDir": "dist",
+      "emitDeclarationOnly": false,
+      "outDir": "./dist",
+      "rootDir": "./src",
+      "baseUrl": ".",
+      "resolveJsonModule": true,
+      "allowSyntheticDefaultImports": true,
+      "paths": {
+        "@elizaos/core": [
+          "../core/src/index.ts"
+        ],
+        "@elizaos/core/*": [
+          "../core/src/*"
+        ],
+        "*": [
+          "src/*"
+        ]
+      }
+    },
+    "include": [
+      "src"
+    ],
+    "references": [
+      {
+        "path": "../core"
+      }
+    ]
+  },
+  "@elizaos/telegram-client": {
+    "compilerOptions": {
+      "target": "ES2021",
+      "module": "nodenext",
+      "lib": [
+        "es2021",
+        "dom"
+      ],
+      "moduleResolution": "nodenext",
+      "declaration": true,
+      "declarationMap": true,
+      "sourceMap": true,
+      "esModuleInterop": true,
+      "skipLibCheck": true,
+      "allowSyntheticDefaultImports": true,
+      "strict": true,
+      "isolatedModules": true,
+      "resolveJsonModule": true,
+      "outDir": "./dist",
+      "rootDir": "./src",
+      "baseUrl": ".",
+      "composite": true,
+      "paths": {
+        "@elizaos/core/*": [
+          "../../core/src/*"
+        ],
+        "*": [
+          "src/*"
+        ]
+      }
+    },
+    "exclude": [
+      "dist",
+      "**/*.test.ts",
+      "node_modules"
+    ],
+    "include": [
+      "src/**/*.ts"
+    ]
+  },
+  "@elizaos-plugins/clients": {
+    "error": "No tsconfig.build.json found"
+  },
+  "@elizaos/telegram-multiagent": {
+    "compilerOptions": {
+      "target": "es2021",
+      "module": "nodenext",
+      "moduleResolution": "nodenext",
+      "lib": [
+        "es2021"
+      ],
+      "strict": true,
+      "esModuleInterop": true,
+      "skipLibCheck": true,
+      "forceConsistentCasingInFileNames": true,
+      "outDir": "dist",
+      "rootDir": "src",
+      "allowSyntheticDefaultImports": true,
+      "resolveJsonModule": true
+    },
+    "include": [
+      "src/**/*"
+    ],
+    "exclude": [
+      "dist",
+      "node_modules"
+    ]
+  },
+  "@elizaos/dynamic-imports": {
+    "compilerOptions": {
+      "target": "ES2021",
+      "module": "nodenext",
+      "lib": [
+        "es2021",
+        "dom"
+      ],
+      "moduleResolution": "nodenext",
+      "declaration": true,
+      "declarationMap": true,
+      "sourceMap": true,
+      "esModuleInterop": true,
+      "skipLibCheck": true,
+      "allowSyntheticDefaultImports": true,
+      "strict": true,
+      "isolatedModules": true,
+      "resolveJsonModule": true,
+      "outDir": "dist",
+      "rootDir": "src",
+      "declarationDir": "dist",
+      "baseUrl": ".",
+      "paths": {
+        "@elizaos/core/*": [
+          "../core/src/*"
+        ]
+      }
+    },
+    "exclude": [
+      "node_modules"
+    ],
+    "include": [
+      "src/**/*.ts"
+    ]
+  },
+  "@elizaos/plugin-bootstrap": {
+    "compilerOptions": {
+      "declaration": true,
+      "emitDeclarationOnly": true,
+      "declarationMap": true,
+      "sourceMap": true,
+      "skipLibCheck": true,
+      "esModuleInterop": true,
+      "allowSyntheticDefaultImports": true,
+      "forceConsistentCasingInFileNames": true,
+      "moduleResolution": "NodeNext",
+      "target": "es2022",
+      "module": "NodeNext",
+      "lib": [
+        "es2022",
+        "dom"
+      ],
+      "strict": true,
+      "isolatedModules": true,
+      "resolveJsonModule": true,
+      "rootDir": "src",
+      "outDir": "dist",
+      "declarationDir": "dist",
+      "baseUrl": ".",
+      "paths": {
+        "@elizaos/core": [
+          "../core/dist/index.d.ts"
+        ],
+        "@elizaos/core/*": [
+          "../core/dist/*"
+        ]
+      }
+    },
+    "include": [
+      "src/**/*.ts"
+    ],
+    "exclude": [
+      "dist",
+      "node_modules"
+    ]
+  },
+  "@elizaos/client-direct": {
+    "compilerOptions": {
+      "target": "es2022",
+      "module": "NodeNext",
+      "lib": [
+        "es2022",
+        "dom"
+      ],
+      "moduleResolution": "NodeNext",
+      "outDir": "dist",
+      "rootDir": "src",
+      "strict": true,
+      "esModuleInterop": true,
+      "skipLibCheck": true,
+      "forceConsistentCasingInFileNames": true,
+      "declaration": true,
+      "noEmitOnError": false,
+      "isolatedModules": true,
+      "noImplicitAny": false,
+      "emitDeclarationOnly": true,
+      "declarationDir": "dist",
+      "baseUrl": ".",
+      "paths": {
+        "@elizaos/core/*": [
+          "../core/dist/*"
+        ],
+        "@elizaos/core": [
+          "../core/dist/index.d.ts"
+        ],
+        "@elizaos/agent/*": [
+          "../agent/dist/*"
+        ],
+        "@elizaos/agent": [
+          "../agent/dist/index.d.ts"
+        ]
+      },
+      "noEmit": false,
+      "declarationMap": true,
+      "sourceMap": true,
+      "allowSyntheticDefaultImports": true,
+      "resolveJsonModule": true
+    },
+    "include": [
+      "src/**/*.ts"
+    ],
+    "exclude": [
+      "dist",
+      "node_modules",
+      "src/**/*.spec.ts",
+      "src/**/*.test.ts"
+    ]
+  },
+  "@elizaos/agent": {
+    "compilerOptions": {
+      "target": "ES2021",
+      "module": "nodenext",
+      "lib": [
+        "es2021",
+        "dom"
+      ],
+      "moduleResolution": "nodenext",
+      "declaration": true,
+      "declarationMap": true,
+      "sourceMap": true,
+      "esModuleInterop": true,
+      "skipLibCheck": true,
+      "allowSyntheticDefaultImports": true,
+      "strict": true,
+      "isolatedModules": true,
+      "resolveJsonModule": true,
+      "outDir": "./dist",
+      "rootDir": "./src",
+      "baseUrl": ".",
+      "composite": true,
+      "paths": {
+        "*": [
+          "src/*"
+        ]
+      }
+    },
+    "exclude": [
+      "node_modules"
+    ],
+    "include": [
+      "src/**/*.ts"
+    ],
+    "references": [
+      {
+        "path": "../core"
+      }
+    ]
+  }
+}

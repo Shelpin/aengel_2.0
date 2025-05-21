@@ -1,0 +1,16 @@
+{
+  "relayServerUrl": "http://207.180.245.243:4000", 
+  "authToken": "elizaos-secure-relay-key",
+  "groupIds": [-1002550618173],
+  "conversationCheckIntervalMs": 30000,
+  "enabled": true,
+  "typingSimulation": {
+    "enabled": true,
+    "baseTypingSpeedCPM": 300,
+    "randomVariation": 0.2
+  ,
+  "heartbeatInterval": 10000,
+}
+,
+  "heartbeatInterval": 10000,
+}

@@ -1,0 +1,52 @@
+digraph "G" {
+  graph [rankdir=RL];
+  subgraph "cluster-main" {
+    graph [label="root", URL="file:///root/eliza/Eliza/DBIG/dependency-graph.pdf"];
+  subgraph "cluster-others" {
+    graph [style="filled", bgcolor="#CFFAFE", label="others", URL="file:///root/eliza/Eliza/DBIG/dependency-graph/others/Eliza/DBIG/dependency-graph.pdf"];
+    "@elizaos/agent" [URL="file:///root/eliza/packages/agent/Eliza/DBIG/dependency-graph.pdf", shape=box, style="filled", fillcolor="#CFFAFE"];
+    "@elizaos/core" [URL="file:///root/eliza/packages/core/Eliza/DBIG/dependency-graph.pdf", shape=box, style="filled", fillcolor="#CFFAFE"];
+    "@elizaos-plugins/clients" [URL="file:///root/eliza/packages/clients/Eliza/DBIG/dependency-graph.pdf", shape=box, style="filled", fillcolor="#CFFAFE"];
+    "client" [URL="file:///root/eliza/client/Eliza/DBIG/dependency-graph.pdf", shape=oval, style="filled", fillcolor="#CFFAFE"];
+    "eliza-docs" [URL="file:///root/eliza/docs/Eliza/DBIG/dependency-graph.pdf", shape=oval, style="filled", fillcolor="#CFFAFE"];
+    "cli" [URL="file:///root/eliza/packages/cli/Eliza/DBIG/dependency-graph.pdf", shape=box, style="filled", fillcolor="#CFFAFE"];
+    "@elizaos/agent" -> "@elizaos/core";
+    "@elizaos/agent" -> "@elizaos-plugins/clients";
+    "client" -> "@elizaos/core";
+  }
+  subgraph "cluster-@elizaos/plugin" {
+    graph [style="filled", bgcolor="#FCE7F3", label="@elizaos/plugin", URL="file:///root/eliza/Eliza/DBIG/dependency-graph/_elizaos_plugin/Eliza/DBIG/dependency-graph.pdf"];
+    "@elizaos/plugin-bootstrap" [URL="file:///root/eliza/packages/plugin-bootstrap/Eliza/DBIG/dependency-graph.pdf", shape=box, style="filled", fillcolor="#FCE7F3"];
+  }
+  subgraph "cluster-@elizaos/telegram" {
+    graph [style="filled", bgcolor="#FEF9C3", label="@elizaos/telegram", URL="file:///root/eliza/Eliza/DBIG/dependency-graph/_elizaos_telegram/Eliza/DBIG/dependency-graph.pdf"];
+    "@elizaos/telegram-multiagent" [URL="file:///root/eliza/packages/telegram-multiagent/Eliza/DBIG/dependency-graph.pdf", shape=box, style="filled", fillcolor="#FEF9C3"];
+  }
+  subgraph "cluster-@elizaos/client" {
+    graph [style="filled", bgcolor="#DCFCE7", label="@elizaos/client", URL="file:///root/eliza/Eliza/DBIG/dependency-graph/_elizaos_client/Eliza/DBIG/dependency-graph.pdf"];
+    "@elizaos/client-direct" [URL="file:///root/eliza/packages/client-direct/Eliza/DBIG/dependency-graph.pdf", shape=box, style="filled", fillcolor="#DCFCE7"];
+  }
+  subgraph "cluster-@elizaos/adapter" {
+    graph [style="filled", bgcolor="#FEE2E2", label="@elizaos/adapter", URL="file:///root/eliza/Eliza/DBIG/dependency-graph/_elizaos_adapter/Eliza/DBIG/dependency-graph.pdf"];
+    "@elizaos/adapter-sqlite" [URL="file:///root/eliza/packages/adapter-sqlite/Eliza/DBIG/dependency-graph.pdf", shape=box, style="filled", fillcolor="#FEE2E2"];
+  }
+  subgraph "cluster-@elizaos/dynamic" {
+    graph [style="filled", bgcolor="#DBEAFE", label="@elizaos/dynamic", URL="file:///root/eliza/Eliza/DBIG/dependency-graph/_elizaos_dynamic/Eliza/DBIG/dependency-graph.pdf"];
+    "@elizaos/dynamic-imports" [URL="file:///root/eliza/packages/dynamic-imports/Eliza/DBIG/dependency-graph.pdf", shape=box, style="filled", fillcolor="#DBEAFE"];
+  }
+    "@elizaos/plugin-bootstrap";
+    "@elizaos/telegram-multiagent";
+    "@elizaos/client-direct";
+    "@elizaos/core";
+    "@elizaos/agent";
+    "@elizaos/adapter-sqlite";
+    "@elizaos/agent" -> "@elizaos/plugin-bootstrap";
+    "@elizaos/agent" -> "@elizaos/telegram-multiagent";
+    "@elizaos/agent" -> "@elizaos/client-direct";
+    "@elizaos/adapter-sqlite" -> "@elizaos/core";
+    "@elizaos/client-direct" -> "@elizaos/agent";
+    "@elizaos/client-direct" -> "@elizaos/core";
+    "@elizaos/core" -> "@elizaos/adapter-sqlite";
+    "@elizaos/plugin-bootstrap" -> "@elizaos/core";
+  }
+}

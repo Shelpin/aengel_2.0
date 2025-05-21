@@ -1,0 +1,139 @@
+# TSConfig Deviation Log
+
+## Base Configuration
+
+```json
+{
+  "target": "ES2021",
+  "module": "nodenext",
+  "lib": [
+    "es2021",
+    "dom"
+  ],
+  "moduleResolution": "nodenext",
+  "declaration": true,
+  "declarationMap": true,
+  "sourceMap": true,
+  "esModuleInterop": true,
+  "skipLibCheck": true,
+  "allowSyntheticDefaultImports": true,
+  "strict": true,
+  "isolatedModules": true,
+  "resolveJsonModule": true,
+  "outDir": "./dist",
+  "rootDir": "./src"
+}
+```
+
+## cli
+
+No tsconfig.build.json found.
+
+## @elizaos/core
+
+- Missing option: declarationMap
+- Missing option: sourceMap
+- Missing option: strict
+- Missing option: isolatedModules
+- Additional option: baseUrl: "."
+- Additional option: composite: true
+- Additional option: paths: {"*":["src/*"]}
+
+## @elizaos/adapter-sqlite
+
+- Missing option: declarationMap
+- Missing option: sourceMap
+- Missing option: strict
+- Missing option: isolatedModules
+- Additional option: composite: true
+- Additional option: declarationDir: "dist"
+- Additional option: emitDeclarationOnly: false
+- Additional option: baseUrl: "."
+- Additional option: paths: {"@elizaos/core":["../core/src/index.ts"],"@elizaos/core/*":["../core/src/*"],"*":["src/*"]}
+
+## @elizaos/telegram-client
+
+- Missing option: declarationMap
+- Missing option: sourceMap
+- Missing option: strict
+- Missing option: isolatedModules
+- Additional option: baseUrl: "."
+- Additional option: composite: true
+- Additional option: paths: {"@elizaos/core/*":["../../core/src/*"],"*":["src/*"]}
+
+## @elizaos-plugins/clients
+
+No tsconfig.build.json found.
+
+## @elizaos/telegram-multiagent
+
+- Different value for target: "es2021" (base: "ES2021")
+- Different value for lib: ["es2021"] (base: ["es2021","dom"])
+- Missing option: declaration
+- Missing option: declarationMap
+- Missing option: sourceMap
+- Missing option: isolatedModules
+- Different value for outDir: "dist" (base: "./dist")
+- Different value for rootDir: "src" (base: "./src")
+
+## @elizaos/dynamic-imports
+
+- Missing option: target
+- Missing option: module
+- Missing option: lib
+- Missing option: moduleResolution
+- Missing option: declaration
+- Missing option: declarationMap
+- Missing option: sourceMap
+- Missing option: esModuleInterop
+- Missing option: skipLibCheck
+- Missing option: allowSyntheticDefaultImports
+- Missing option: strict
+- Missing option: isolatedModules
+- Missing option: resolveJsonModule
+- Different value for outDir: "dist" (base: "./dist")
+- Different value for rootDir: "src" (base: "./src")
+- Additional option: declarationDir: "dist"
+- Additional option: baseUrl: "."
+- Additional option: paths: {"@elizaos/core/*":["../core/src/*"]}
+
+## @elizaos/plugin-bootstrap
+
+- Different value for target: "es2022" (base: "ES2021")
+- Different value for module: "NodeNext" (base: "nodenext")
+- Different value for lib: ["es2022","dom"] (base: ["es2021","dom"])
+- Different value for moduleResolution: "NodeNext" (base: "nodenext")
+- Different value for outDir: "dist" (base: "./dist")
+- Different value for rootDir: "src" (base: "./src")
+- Additional option: emitDeclarationOnly: true
+- Additional option: forceConsistentCasingInFileNames: true
+- Additional option: declarationDir: "dist"
+- Additional option: baseUrl: "."
+- Additional option: paths: {"@elizaos/core":["../core/dist/index.d.ts"],"@elizaos/core/*":["../core/dist/*"]}
+
+## @elizaos/client-direct
+
+- Different value for target: "es2022" (base: "ES2021")
+- Different value for module: "NodeNext" (base: "nodenext")
+- Different value for lib: ["es2022","dom"] (base: ["es2021","dom"])
+- Different value for moduleResolution: "NodeNext" (base: "nodenext")
+- Different value for outDir: "dist" (base: "./dist")
+- Different value for rootDir: "src" (base: "./src")
+- Additional option: noEmitOnError: false
+- Additional option: emitDeclarationOnly: true
+- Additional option: declarationDir: "dist"
+- Additional option: baseUrl: "."
+- Additional option: paths: {"@elizaos/core/*":["../core/dist/*"],"@elizaos/core":["../core/dist/index.d.ts"],"@elizaos/agent/*":["../agent/dist/*"],"@elizaos/agent":["../agent/dist/index.d.ts"]}
+- Additional option: noEmit: false
+- Additional option: forceConsistentCasingInFileNames: true
+
+## @elizaos/agent
+
+- Missing option: declarationMap
+- Missing option: sourceMap
+- Missing option: strict
+- Missing option: isolatedModules
+- Additional option: baseUrl: "."
+- Additional option: composite: true
+- Additional option: paths: {"*":["src/*"]}
+

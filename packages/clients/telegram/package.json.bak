@@ -1,0 +1,17 @@
+{
+  "name": "@elizaos/telegram-client",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "prebuild": "rimraf dist && mkdir -p dist",
+    "build": "tsup --config tsup.config.cjs --dts"
+  }
+}

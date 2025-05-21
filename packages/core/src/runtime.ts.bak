@@ -1,0 +1,1481 @@
+import { readFile } from "fs/promises.js";
+import { join } from 'node:path';
+import { names, uniqueNamesGenerator } from "unique-names-generator";
+import { v4 as uuidv4 } from 'uuid';
+import {
+    composeActionExamples,
+    formatActionNames,
+    formatActions,
+} from './actions.js';
+import { addHeader, composeContext } from './context.js';
+import {
+    evaluationTemplate,
+    formatEvaluatorExamples,
+    formatEvaluatorNames,
+    formatEvaluators,
+} from './evaluators.js';
+import { generateText } from './generation.js';
+import { formatGoalsAsString, getGoals } from './goals.js';
+import { elizaLogger } from './internal/logger-internal.js';
+import { callKnowledgeSet, callKnowledgeGet } from './knowledge-bridge.js';
+import { MemoryManager } from './memory.js';
+import { formatActors, formatMessages, getActorDetails } from './messages.js';
+import { parseJsonArrayFromText } from './parsing.js';
+import { formatPosts } from './posts.js';
+import { getProviders } from './providers.js';
+import { RAGKnowledgeManager } from './ragknowledge.js';
+import settings from './settings.js';
+import {
+    type Character,
+    type Goal,
+    type HandlerCallback,
+    type IAgentRuntime,
+    type IAgentRuntimeBridge,
+    type ICacheManager,
+    type IDatabaseAdapter,
+    type IMemoryManager,
+    type IRAGKnowledgeManager,
+    // type IVerifiableInferenceAdapter,
+    type KnowledgeItem,
+    type RAGKnowledgeItem,
+    type Media,
+    ModelClass,
+    ModelProviderName,
+    type Plugin,
+    type Provider,
+    type Adapter,
+    type Service,
+    type ServiceType,
+    type State,
+    type UUID,
+    type Action,
+    type Actor,
+    type Evaluator,
+    type Memory,
+    type DirectoryItem,
+    type ClientInstance,
+} from './types.js';
+import { stringToUuid } from './uuid.js';
+import { glob } from "glob.js";
+import { existsSync } from 'node:fs';
+/**
+ * Represents the runtime environment for an agent, handling message processing,
+ * action registration, and interaction with external services like OpenAI and Supabase.
+ */
+
+function isDirectoryItem(item: any): item is DirectoryItem {
+    return (
+        typeof item === "object" &&
+        item !== null &&
+        "directory" in item &&
+        typeof item.directory === "string"
+    );
+}
+
+export class AgentRuntime implements IAgentRuntime {
+    /**
+     * Default count for recent messages to be kept in memory.
+     * @private
+     */
+    readonly #conversationLength = 32 as number;
+    /**
+     * The ID of the agent
+     */
+    agentId: UUID;
+    /**
+     * The base URL of the server where the agent's requests are processed.
+     */
+    serverUrl = "http://localhost:7998";
+
+    /**
+     * The database adapter used for interacting with the database.
+     */
+    databaseAdapter: IDatabaseAdapter;
+
+    /**
+     * Authentication token used for securing requests.
+     */
+    token: string | null;
+
+    /**
+     * Custom actions that the agent can perform.
+     */
+    actions: Action[] = [];
+
+    /**
+     * Evaluators used to assess and guide the agent's responses.
+     */
+    evaluators: Evaluator[] = [];
+
+    /**
+     * Context providers used to provide context for message generation.
+     */
+    providers: Provider[] = [];
+
+    /**
+     * Database adapters used to interact with the database.
+     */
+    adapters: Adapter[] = [];
+
+    plugins: Plugin[] = [];
+
+    /**
+     * The model to use for generateText.
+     */
+    modelProvider: ModelProviderName;
+
+    /**
+     * The model to use for generateImage.
+     */
+    imageModelProvider: ModelProviderName;
+
+    /**
+     * The model to use for describing images.
+     */
+    imageVisionModelProvider: ModelProviderName;
+
+    /**
+     * Fetch function to use
+     * Some environments may not have access to the global fetch function and need a custom fetch override.
+     */
+    fetch = fetch;
+
+    /**
+     * The character to use for the agent
+     */
+    character: Character;
+
+    /**
+     * Store messages that are sent and received by the agent.
+     */
+    messageManager: IMemoryManager;
+
+    /**
+     * Store and recall descriptions of users based on conversations.
+     */
+    descriptionManager: IMemoryManager;
+
+    /**
+     * Manage the creation and recall of static information (documents, historical game lore, etc)
+     */
+    loreManager: IMemoryManager;
+
+    /**
+     * Hold large documents that can be referenced
+     */
+    documentsManager: IMemoryManager;
+
+    /**
+     * Searchable document fragments
+     */
+    knowledgeManager: IMemoryManager;
+
+    ragKnowledgeManager: IRAGKnowledgeManager;
+
+    private readonly knowledgeRoot: string;
+
+    services: Map<ServiceType, Service> = new Map();
+    memoryManagers: Map<string, IMemoryManager> = new Map();
+    cacheManager: ICacheManager;
+    clients: ClientInstance[] = [];
+
+    // verifiableInferenceAdapter?: IVerifiableInferenceAdapter;
+
+    registerMemoryManager(manager: IMemoryManager): void {
+        if (!manager.tableName) {
+            throw new Error("Memory manager must have a tableName");
+        }
+
+        if (this.memoryManagers.has(manager.tableName)) {
+            elizaLogger.warn(
+                `Memory manager ${manager.tableName} is already registered. Skipping registration.`,
+            );
+            return;
+        }
+
+        this.memoryManagers.set(manager.tableName, manager);
+    }
+
+    getMemoryManager(tableName: string): IMemoryManager | null {
+        return this.memoryManagers.get(tableName) || null;
+    }
+
+    getService<T extends Service>(service: ServiceType): T | null {
+        const serviceInstance = this.services.get(service);
+        if (!serviceInstance) {
+            elizaLogger.error(`Service ${service} not found`);
+            return null;
+        }
+        return serviceInstance as T;
+    }
+
+    async registerService(service: Service): Promise<void> {
+        const serviceType = service.serviceType;
+        elizaLogger.log(`${this.character.name}(${this.agentId}) - Registering service:`, serviceType);
+
+        if (this.services.has(serviceType)) {
+            elizaLogger.warn(
+                `${this.character.name}(${this.agentId}) - Service ${serviceType} is already registered. Skipping registration.`
+            );
+            return;
+        }
+
+        // Add the service to the services map
+        this.services.set(serviceType, service);
+        elizaLogger.success(`${this.character.name}(${this.agentId}) - Service ${serviceType} registered successfully`);
+    }
+
+    /**
+     * Creates an instance of AgentRuntime.
+     * @param opts - The options for configuring the AgentRuntime.
+     * @param opts.conversationLength - The number of messages to hold in the recent message cache.
+     * @param opts.token - The JWT token, can be a JWT token if outside worker, or an OpenAI token if inside worker.
+     * @param opts.serverUrl - The URL of the worker.
+     * @param opts.actions - Optional custom actions.
+     * @param opts.evaluators - Optional custom evaluators.
+     * @param opts.services - Optional custom services.
+     * @param opts.memoryManagers - Optional custom memory managers.
+     * @param opts.providers - Optional context providers.
+     * @param opts.model - The model to use for generateText.
+     * @param opts.embeddingModel - The model to use for embedding.
+     * @param opts.agentId - Optional ID of the agent.
+     * @param opts.databaseAdapter - The database adapter used for interacting with the database.
+     * @param opts.fetch - Custom fetch function to use for making requests.
+     */
+
+    constructor(opts: {
+        conversationLength?: number; // number of messages to hold in the recent message cache
+        agentId?: UUID; // ID of the agent
+        character?: Character; // The character to use for the agent
+        token: string; // JWT token, can be a JWT token if outside worker, or an OpenAI token if inside worker
+        serverUrl?: string; // The URL of the worker
+        actions?: Action[]; // Optional custom actions
+        evaluators?: Evaluator[]; // Optional custom evaluators
+        plugins?: Plugin[];
+        providers?: Provider[];
+        modelProvider: ModelProviderName;
+
+        services?: Service[]; // Map of service name to service instance
+        managers?: IMemoryManager[]; // Map of table name to memory manager
+        databaseAdapter?: IDatabaseAdapter; // The database adapter used for interacting with the database
+        fetch?: typeof fetch; // Use standard fetch type to align with DOM lib
+        speechModelPath?: string;
+        cacheManager?: ICacheManager;
+        logging?: boolean;
+        // verifiableInferenceAdapter?: IVerifiableInferenceAdapter;
+    }) {
+        // Assign agentId, ensuring it's a valid UUID type
+        this.agentId = opts.agentId || (uuidv4() as UUID);
+        this.#conversationLength = opts.conversationLength || this.#conversationLength;
+        this.token = opts.token || null;
+        this.serverUrl = opts.serverUrl || this.serverUrl;
+        this.fetch = opts.fetch || fetch;
+
+        // Enforce required options
+        if (!opts.character) {
+            throw new Error("AgentRuntime requires a character configuration.");
+        }
+        this.character = opts.character;
+
+        if (!opts.databaseAdapter) {
+            throw new Error("AgentRuntime requires a databaseAdapter.");
+        }
+        this.databaseAdapter = opts.databaseAdapter;
+
+        if (!opts.cacheManager) {
+            throw new Error("AgentRuntime requires a cacheManager.");
+        }
+        this.cacheManager = opts.cacheManager;
+
+        // Assign model providers
+        this.modelProvider = opts.modelProvider;
+        this.imageModelProvider = this.character.imageModelProvider || opts.modelProvider;
+        this.imageVisionModelProvider = this.character.imageVisionModelProvider || opts.modelProvider;
+
+        this.actions = opts.actions || this.actions;
+        this.evaluators = opts.evaluators || this.evaluators;
+        this.providers = opts.providers || this.providers;
+        this.plugins = opts.plugins || this.plugins;
+        //this.adapters = opts.adapters || this.adapters;
+
+        // Initialize memory managers
+        this.messageManager = new MemoryManager({
+            tableName: "messages",
+            runtime: this,
+        });
+        this.descriptionManager = new MemoryManager({
+            tableName: "descriptions",
+            runtime: this,
+        });
+        this.loreManager = new MemoryManager({
+            tableName: "lore",
+            runtime: this,
+        });
+        this.documentsManager = new MemoryManager({
+            tableName: "documents",
+            runtime: this,
+        });
+        this.knowledgeManager = new MemoryManager({
+            tableName: "knowledge",
+            runtime: this,
+        });
+
+        // Ensure knowledgeRoot is defined
+        this.knowledgeRoot = settings.KNOWLEDGE_ROOT || join(process.cwd(), 'knowledge');
+        if (!existsSync(this.knowledgeRoot)) {
+            elizaLogger.warn(`Knowledge root directory does not exist: ${this.knowledgeRoot}. Creating...`);
+            try {
+                require('fs').mkdirSync(this.knowledgeRoot, { recursive: true });
+            } catch (err) {
+                elizaLogger.error(`Failed to create knowledge root directory: ${err}`);
+                // Depending on requirements, you might want to throw here
+            }
+        }
+
+        this.ragKnowledgeManager = new RAGKnowledgeManager({
+            tableName: "knowledge_rag",
+            runtime: this,
+            knowledgeRoot: this.knowledgeRoot,
+        });
+
+        // Register standard memory managers
+        this.registerMemoryManager(this.messageManager);
+        this.registerMemoryManager(this.descriptionManager);
+        this.registerMemoryManager(this.loreManager);
+        this.registerMemoryManager(this.documentsManager);
+        this.registerMemoryManager(this.knowledgeManager);
+
+        // Register provided memory managers
+        opts.managers?.forEach((manager) => this.registerMemoryManager(manager));
+
+        // Initialize services from options
+        opts.services?.forEach((service) => this.registerService(service));
+
+        // Initialize from plugins
+        this.plugins.forEach((plugin) => {
+            plugin.actions?.forEach((action) => this.registerAction(action));
+            plugin.evaluators?.forEach((evaluator) => this.registerEvaluator(evaluator));
+            plugin.providers?.forEach((provider) => this.registerContextProvider(provider));
+            plugin.services?.forEach((service) => this.registerService(service));
+            plugin.clients?.forEach((client) => {
+                client.start(this).then(instance => this.clients.push(instance));
+            });
+            plugin.adapters?.forEach((adapter) => this.registerAdapter(adapter));
+        });
+
+        // if (opts.verifiableInferenceAdapter) {
+        //     this.verifiableInferenceAdapter = opts.verifiableInferenceAdapter;
+        // }
+
+        // Initialize default providers if none are provided
+        // Remove incorrect getProviders() call here; providers are registered or assigned later if empty
+        // if (this.providers.length === 0) {
+        //     this.providers = getProviders(); 
+        //     elizaLogger.debug("Initialized default providers");
+        // }
+
+        elizaLogger.log("Agent Runtime Initialized", {
+            agentId: this.agentId,
+            character: this.character.name,
+            modelProvider: this.modelProvider,
+            actions: this.actions.length,
+            evaluators: this.evaluators.length,
+            providers: this.providers.length,
+            plugins: this.plugins.length,
+        });
+
+        // Bind global runtime if running in Node.js environment
+        if (typeof process !== 'undefined' && process.versions?.node) {
+            // Cast globalThis to any to set property
+            if (!(globalThis as any).__elizaRuntime) {
+                (globalThis as any).__elizaRuntime = this;
+            }
+        }
+    }
+
+    private async initializeDatabase() {
+        // By convention, we create a user and room using the agent id.
+        // Memories related to it are considered global context for the agent.
+        this.ensureRoomExists(this.agentId);
+        this.ensureUserExists(
+            this.agentId,
+            this.character.username || this.character.name,
+            this.character.name,
+        ).then(() => {
+            // postgres needs the user to exist before you can add a participant
+            this.ensureParticipantExists(this.agentId, this.agentId);
+        });
+    }
+
+    async initialize() {
+        elizaLogger.log("Initializing Agent Runtime...");
+
+        // Cast globalThis to any to set property
+        if (typeof process !== 'undefined' && process.versions?.node) {
+            (globalThis as any).__elizaRuntimeReady = false; // Set ready flag
+        }
+
+        this.initializeDatabase();
+
+        for (const [serviceType, service] of this.services.entries()) {
+            try {
+                await service.initialize(this);
+                this.services.set(serviceType, service);
+                elizaLogger.success(
+                    `${this.character.name}(${this.agentId}) - Service ${serviceType} initialized successfully`
+                );
+            } catch (error) {
+                elizaLogger.error(
+                    `${this.character.name}(${this.agentId}) - Failed to initialize service ${serviceType}:`,
+                    error
+                );
+                throw error;
+            }
+        }
+
+        // Initialize plugins
+        for (const plugin of this.plugins) {
+            try {
+                console.log(`Attempting to initialize plugin: ${plugin.name}`);
+                if (plugin.initialize) {
+                    console.log(`Plugin ${plugin.name} has initialize method, calling it...`);
+                    await plugin.initialize();
+                    elizaLogger.success(
+                        `${this.character.name}(${this.agentId}) - Plugin ${plugin.name} initialized successfully`
+                    );
+                } else {
+                    console.log(`Plugin ${plugin.name} does not have initialize method`);
+                }
+
+                if (plugin.services) {
+                    await Promise.all(
+                        plugin.services?.map((service) => service.initialize(this)),
+                    );
+                }
+            } catch (error) {
+                console.log(`Error initializing plugin ${plugin.name}:`, error);
+                elizaLogger.error(
+                    `${this.character.name}(${this.agentId}) - Failed to initialize plugin ${plugin.name}:`,
+                    error
+                );
+                // Don't throw error for plugin initialization failures
+                // to allow the agent to continue running
+            }
+        }
+
+        if (
+            this.character &&
+            this.character.knowledge &&
+            this.character.knowledge.length > 0
+        ) {
+            elizaLogger.info(
+                `[RAG Check] RAG Knowledge enabled: ${this.character.settings && this.character.settings.ragKnowledge ? true : false}`,
+            );
+            elizaLogger.info(
+                `[RAG Check] Knowledge items:`,
+                this.character.knowledge,
+            );
+
+            if (this.character.settings && this.character.settings.ragKnowledge) {
+                // Type guards with logging for each knowledge type
+                const [directoryKnowledge, pathKnowledge, stringKnowledge] =
+                    this.character.knowledge.reduce(
+                        (acc, item) => {
+                            if (typeof item === "object") {
+                                if (isDirectoryItem(item)) {
+                                    elizaLogger.debug(
+                                        `[RAG Filter] Found directory item: ${JSON.stringify(item)}`,
+                                    );
+                                    acc[0].push(item);
+                                } else if ("path" in item) {
+                                    elizaLogger.debug(
+                                        `[RAG Filter] Found path item: ${JSON.stringify(item)}`,
+                                    );
+                                    acc[1].push(item);
+                                }
+                            } else if (typeof item === "string") {
+                                elizaLogger.debug(
+                                    `[RAG Filter] Found string item: ${item.slice(0, 100)}...`,
+                                );
+                                acc[2].push(item);
+                            }
+                            return acc;
+                        },
+                        [[], [], []] as [
+                            Array<{ directory: string; shared?: boolean }>,
+                            Array<{ path: string; shared?: boolean }>,
+                            Array<string>,
+                        ],
+                    );
+
+                elizaLogger.info(
+                    `[RAG Summary] Found ${directoryKnowledge.length} directories, ${pathKnowledge.length} paths, and ${stringKnowledge.length} strings`,
+                );
+
+                // Process each type of knowledge
+                if (directoryKnowledge.length > 0) {
+                    elizaLogger.info(
+                        `[RAG Process] Processing directory knowledge sources:`,
+                    );
+                    for (const dir of directoryKnowledge) {
+                        elizaLogger.info(
+                            `  - Directory: ${dir.directory} (shared: ${!!dir.shared})`,
+                        );
+                        await this.processCharacterRAGDirectory(dir);
+                    }
+                }
+
+                if (pathKnowledge.length > 0) {
+                    elizaLogger.info(
+                        `[RAG Process] Processing individual file knowledge sources`,
+                    );
+                    await this.processCharacterRAGKnowledge(pathKnowledge);
+                }
+
+                if (stringKnowledge.length > 0) {
+                    elizaLogger.info(
+                        `[RAG Process] Processing direct string knowledge`,
+                    );
+                    await this.processCharacterRAGKnowledge(stringKnowledge);
+                }
+            } else {
+                // Non-RAG mode: only process string knowledge
+                const stringKnowledge = this.character.knowledge.filter(
+                    (item): item is string => typeof item === "string",
+                );
+                await this.processCharacterKnowledge(stringKnowledge);
+            }
+
+            // After all new knowledge is processed, clean up any deleted files
+            elizaLogger.info(
+                `[RAG Cleanup] Starting cleanup of deleted knowledge files`,
+            );
+            await this.ragKnowledgeManager.cleanupDeletedKnowledgeFiles();
+            elizaLogger.info(`[RAG Cleanup] Cleanup complete`);
+        }
+
+        // Cast globalThis to any to set property
+        if (typeof process !== 'undefined' && process.versions?.node) {
+            (globalThis as any).__elizaRuntimeReady = true;
+        }
+
+        elizaLogger.success("Runtime initialized successfully");
+    }
+
+    async stop() {
+        elizaLogger.log("Stopping Agent Runtime...");
+        await Promise.all(this.clients.map(client => client.stop(this)));
+        if (this.databaseAdapter) {
+            await this.databaseAdapter.close();
+        }
+        elizaLogger.log("Agent Runtime stopped.");
+    }
+
+    /**
+     * Processes character knowledge by creating document memories and fragment memories.
+     * This function takes an array of knowledge items, creates a document memory for each item if it doesn't exist,
+     * then chunks the content into fragments, embeds each fragment, and creates fragment memories.
+     * @param knowledge An array of knowledge items containing id, path, and content.
+     */
+    private async processCharacterKnowledge(items: string[]) {
+        try {
+            for (const item of items) {
+                elizaLogger.debug(`Processing knowledge item: ${item}`);
+                if (!item) continue;
+                const result = await readFile(join(this.knowledgeRoot, item), {
+                    encoding: "utf-8",
+                });
+                elizaLogger.debug(
+                    `Loaded knowledge item: ${item}, size: ${result.length}`,
+                );
+                await callKnowledgeSet(this as unknown as IAgentRuntimeBridge, {
+                    path: item,
+                    content: result,
+                });
+            }
+        } catch (err) {
+            elizaLogger.error(
+                `Error processing knowledge: ${(err as Error).message}`,
+            );
+        }
+    }
+
+    /**
+     * Processes character knowledge by creating document memories and fragment memories.
+     * This function takes an array of knowledge items, creates a document knowledge for each item if it doesn't exist,
+     * then chunks the content into fragments, embeds each fragment, and creates fragment knowledge.
+     * An array of knowledge items or objects containing id, path, and content.
+     */
+    private async processCharacterRAGKnowledge(
+        items: (string | { path: string; shared?: boolean })[],
+    ) {
+        let hasError = false;
+
+        for (const item of items) {
+            if (!item) continue;
+
+            try {
+                // Check if item is marked as shared
+                let isShared = false;
+                let contentItem = item;
+
+                // Only treat as shared if explicitly marked
+                if (typeof item === "object" && "path" in item) {
+                    isShared = item.shared === true;
+                    contentItem = item.path;
+                } else {
+                    contentItem = item;
+                }
+
+                // const knowledgeId = stringToUuid(contentItem);
+                const knowledgeId = this.ragKnowledgeManager.generateScopedId(
+                    contentItem,
+                    isShared,
+                );
+                const fileExtension = contentItem
+                    .split(".")
+                    .pop()
+                    ?.toLowerCase();
+
+                // Check if it's a file or direct knowledge
+                if (
+                    fileExtension &&
+                    ["md", "txt", "pdf"].includes(fileExtension)
+                ) {
+                    try {
+                        const filePath = join(this.knowledgeRoot, contentItem);
+                        // Get existing knowledge first with more detailed logging
+                        elizaLogger.debug("[RAG Query]", {
+                            knowledgeId,
+                            agentId: this.agentId,
+                            relativePath: contentItem,
+                            fullPath: filePath,
+                            isShared,
+                            knowledgeRoot: this.knowledgeRoot,
+                        });
+
+                        // Get existing knowledge first
+                        const existingKnowledge =
+                            await this.ragKnowledgeManager.getKnowledge({
+                                id: knowledgeId,
+                                agentId: this.agentId, // Keep agentId as it's used in OR query
+                            });
+
+                        elizaLogger.debug("[RAG Query Result]", {
+                            relativePath: contentItem,
+                            fullPath: filePath,
+                            knowledgeId,
+                            isShared,
+                            exists: existingKnowledge.length > 0,
+                            knowledgeCount: existingKnowledge.length,
+                            firstResult: existingKnowledge[0]
+                                ? {
+                                    id: existingKnowledge[0].id,
+                                    agentId: existingKnowledge[0].agentId,
+                                    contentLength:
+                                        existingKnowledge[0].content.text
+                                            .length,
+                                }
+                                : null,
+                            results: existingKnowledge.map((k) => ({
+                                id: k.id,
+                                agentId: k.agentId,
+                                isBaseKnowledge: !k.id.includes("chunk"),
+                            })),
+                        });
+
+                        // Read file content
+                        const content: string = await readFile(
+                            filePath,
+                            "utf8",
+                        );
+                        if (!content) {
+                            hasError = true;
+                            continue;
+                        }
+
+                        if (existingKnowledge.length > 0) {
+                            const existingContent =
+                                existingKnowledge[0].content.text;
+
+                            elizaLogger.debug("[RAG Compare]", {
+                                path: contentItem,
+                                knowledgeId,
+                                isShared,
+                                existingContentLength: existingContent.length,
+                                newContentLength: content.length,
+                                contentSample: content.slice(0, 100),
+                                existingContentSample: existingContent.slice(
+                                    0,
+                                    100,
+                                ),
+                                matches: existingContent === content,
+                            });
+
+                            if (existingContent === content) {
+                                elizaLogger.info(
+                                    `${isShared ? "Shared knowledge" : "Knowledge"} ${contentItem} unchanged, skipping`,
+                                );
+                                continue;
+                            }
+
+                            // Content changed, remove old knowledge before adding new
+                            elizaLogger.info(
+                                `${isShared ? "Shared knowledge" : "Knowledge"} ${contentItem} changed, updating...`,
+                            );
+                            await this.ragKnowledgeManager.removeKnowledge(
+                                knowledgeId,
+                            );
+                            await this.ragKnowledgeManager.removeKnowledge(
+                                `${knowledgeId}-chunk-*` as UUID,
+                            );
+                        }
+
+                        elizaLogger.info(
+                            `Processing ${fileExtension.toUpperCase()} file content for`,
+                            this.character.name,
+                            "-",
+                            contentItem,
+                        );
+
+                        await this.ragKnowledgeManager.processFile({
+                            path: contentItem,
+                            content: content,
+                            type: fileExtension as "pdf" | "md" | "txt",
+                            isShared: isShared,
+                        });
+                    } catch (error: any) {
+                        hasError = true;
+                        elizaLogger.error(
+                            `Failed to read knowledge file ${contentItem}. Error details:`,
+                            error?.message || error || "Unknown error",
+                        );
+                        continue;
+                    }
+                } else {
+                    // Handle direct knowledge string
+                    elizaLogger.info(
+                        "Processing direct knowledge for",
+                        this.character.name,
+                        "-",
+                        contentItem.slice(0, 100),
+                    );
+
+                    const existingKnowledge =
+                        await this.ragKnowledgeManager.getKnowledge({
+                            id: knowledgeId,
+                            agentId: this.agentId,
+                        });
+
+                    if (existingKnowledge.length > 0) {
+                        elizaLogger.info(
+                            `Direct knowledge ${knowledgeId} already exists, skipping`,
+                        );
+                        continue;
+                    }
+
+                    await this.ragKnowledgeManager.createKnowledge({
+                        id: knowledgeId,
+                        agentId: this.agentId,
+                        content: {
+                            text: contentItem,
+                            metadata: {
+                                type: "direct",
+                            },
+                        },
+                    });
+                }
+            } catch (error: any) {
+                hasError = true;
+                elizaLogger.error(
+                    `Error processing knowledge item ${item}:`,
+                    error?.message || error || "Unknown error",
+                );
+                continue;
+            }
+        }
+
+        if (hasError) {
+            elizaLogger.warn(
+                "Some knowledge items failed to process, but continuing with available knowledge",
+            );
+        }
+    }
+
+    /**
+     * Processes directory-based RAG knowledge by recursively loading and processing files.
+     * @param dirConfig The directory configuration containing path and shared flag
+     */
+    private async processCharacterRAGDirectory(dirConfig: {
+        directory: string;
+        shared?: boolean;
+    }) {
+        if (!dirConfig.directory) {
+            elizaLogger.error("[RAG Directory] No directory specified");
+            return;
+        }
+
+        // Sanitize directory path to prevent traversal attacks
+        const sanitizedDir = dirConfig.directory.replace(/\.\./g, "");
+        const dirPath = join(this.knowledgeRoot, sanitizedDir);
+
+        try {
+            // Check if directory exists
+            const dirExists = existsSync(dirPath);
+            if (!dirExists) {
+                elizaLogger.error(
+                    `[RAG Directory] Directory does not exist: ${sanitizedDir}`,
+                );
+                return;
+            }
+
+            elizaLogger.debug(`[RAG Directory] Searching in: ${dirPath}`);
+            // Use glob to find all matching files in directory
+            const files = await glob("**/*.{md,txt,pdf}", {
+                cwd: dirPath,
+                nodir: true,
+                absolute: false,
+            });
+
+            if (files.length === 0) {
+                elizaLogger.warn(
+                    `No matching files found in directory: ${dirConfig.directory}`,
+                );
+                return;
+            }
+
+            elizaLogger.info(
+                `[RAG Directory] Found ${files.length} files in ${dirConfig.directory}`,
+            );
+
+            // Process files in batches to avoid memory issues
+            const BATCH_SIZE = 5;
+            for (let i = 0; i < files.length; i += BATCH_SIZE) {
+                const batch = files.slice(i, i + BATCH_SIZE);
+
+                await Promise.all(
+                    batch.map(async (file) => {
+                        try {
+                            const relativePath = join(sanitizedDir, file);
+
+                            elizaLogger.debug(
+                                `[RAG Directory] Processing file ${i + 1}/${files.length}:`,
+                                {
+                                    file,
+                                    relativePath,
+                                    shared: dirConfig.shared,
+                                },
+                            );
+
+                            await this.processCharacterRAGKnowledge([
+                                {
+                                    path: relativePath,
+                                    shared: dirConfig.shared,
+                                },
+                            ]);
+                        } catch (error) {
+                            elizaLogger.error(
+                                `[RAG Directory] Failed to process file: ${file}`,
+                                error instanceof Error
+                                    ? {
+                                        name: error.name,
+                                        message: error.message,
+                                        stack: error.stack,
+                                    }
+                                    : error,
+                            );
+                        }
+                    }),
+                );
+
+                elizaLogger.debug(
+                    `[RAG Directory] Completed batch ${Math.min(i + BATCH_SIZE, files.length)}/${files.length} files`,
+                );
+            }
+
+            elizaLogger.success(
+                `[RAG Directory] Successfully processed directory: ${sanitizedDir}`,
+            );
+        } catch (error) {
+            elizaLogger.error(
+                `[RAG Directory] Failed to process directory: ${sanitizedDir}`,
+                error instanceof Error
+                    ? {
+                        name: error.name,
+                        message: error.message,
+                        stack: error.stack,
+                    }
+                    : error,
+            );
+            throw error; // Re-throw to let caller handle it
+        }
+    }
+
+    getSetting(key: string) {
+        // check if the key is in the character.settings.secrets object
+        if (this.character.settings?.secrets?.[key]) {
+            return this.character.settings.secrets[key];
+        }
+        // if not, check if it's in the settings object
+        if (this.character.settings?.[key]) {
+            return this.character.settings[key];
+        }
+
+        // if not, check if it's in the settings object
+        if (settings[key]) {
+            return settings[key];
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the number of messages that are kept in the conversation buffer.
+     * @returns The number of recent messages to be kept in memory.
+     */
+    getConversationLength() {
+        return this.#conversationLength;
+    }
+
+    /**
+     * Register an action for the agent to perform.
+     * @param action The action to register.
+     */
+    registerAction(action: Action) {
+        elizaLogger.success(`${this.character.name}(${this.agentId}) - Registering action: ${action.name}`);
+        this.actions.push(action);
+    }
+
+    /**
+     * Register an evaluator to assess and guide the agent's responses.
+     * @param evaluator The evaluator to register.
+     */
+    registerEvaluator(evaluator: Evaluator) {
+        this.evaluators.push(evaluator);
+    }
+
+    /**
+     * Register a context provider to provide context for message generation.
+     * @param provider The context provider to register.
+     */
+    registerContextProvider(provider: Provider) {
+        this.providers.push(provider);
+    }
+
+    /**
+     * Register an adapter for the agent to use.
+     * @param adapter The adapter to register.
+     */
+    registerAdapter(adapter: Adapter) {
+        this.adapters.push(adapter);
+    }
+
+    /**
+     * Process the actions of a message.
+     * @param message The message to process.
+     * @param content The content of the message to process actions from.
+     */
+    async processActions(
+        message: Memory,
+        responses: Memory[],
+        state?: State,
+        callback?: HandlerCallback,
+    ): Promise<void> {
+        for (const response of responses) {
+            if (!response.content?.action) {
+                elizaLogger.warn("No action found in the response content.");
+                continue;
+            }
+
+            const normalizedAction = response.content.action
+                .toLowerCase()
+                .replace("_", "");
+
+            elizaLogger.success(`Normalized action: ${normalizedAction}`);
+
+            let action = this.actions.find(
+                (a: { name: string }) =>
+                    a.name
+                        .toLowerCase()
+                        .replace("_", "")
+                        .includes(normalizedAction) ||
+                    normalizedAction.includes(
+                        a.name.toLowerCase().replace("_", ""),
+                    ),
+            );
+
+            if (!action) {
+                elizaLogger.info("Attempting to find action in similes.");
+                for (const _action of this.actions) {
+                    const simileAction = _action.similes.find(
+                        (simile) =>
+                            simile
+                                .toLowerCase()
+                                .replace("_", "")
+                                .includes(normalizedAction) ||
+                            normalizedAction.includes(
+                                simile.toLowerCase().replace("_", ""),
+                            ),
+                    );
+                    if (simileAction) {
+                        action = _action;
+                        elizaLogger.success(
+                            `Action found in similes: ${action.name}`,
+                        );
+                        break;
+                    }
+                }
+            }
+
+            if (!action) {
+                elizaLogger.error(
+                    "No action found for",
+                    response.content.action,
+                );
+                continue;
+            }
+
+            if (!action.handler) {
+                elizaLogger.error(`Action ${action.name} has no handler.`);
+                continue;
+            }
+
+            try {
+                elizaLogger.info(
+                    `Executing handler for action: ${action.name}`,
+                );
+                await action.handler(this, message, state, {}, callback);
+            } catch (error) {
+                elizaLogger.error(error);
+            }
+        }
+    }
+
+    /**
+     * Evaluate the message and state using the registered evaluators.
+     * @param message The message to evaluate.
+     * @param state The state of the agent.
+     * @param didRespond Whether the agent responded to the message.~
+     * @param callback The handler callback
+     * @returns The results of the evaluation.
+     */
+    async evaluate(
+        message: Memory,
+        state: State,
+        didRespond?: boolean,
+        callback?: HandlerCallback,
+    ) {
+        const evaluatorPromises = this.evaluators.map(
+            async (evaluator: Evaluator) => {
+                elizaLogger.log("Evaluating", evaluator.name);
+                if (!evaluator.handler) {
+                    return null;
+                }
+                if (!didRespond && !evaluator.alwaysRun) {
+                    return null;
+                }
+                const result = await evaluator.validate(this, message, state);
+                if (result) {
+                    return evaluator;
+                }
+                return null;
+            },
+        );
+
+        const resolvedEvaluators = await Promise.all(evaluatorPromises);
+        const evaluatorsData = resolvedEvaluators.filter(
+            (evaluator): evaluator is Evaluator => evaluator !== null,
+        );
+
+        // if there are no evaluators this frame, return
+        if (!evaluatorsData || evaluatorsData.length === 0) {
+            return [];
+        }
+
+        const context = composeContext({
+            state: {
+                ...state,
+                evaluators: formatEvaluators(evaluatorsData),
+                evaluatorNames: formatEvaluatorNames(evaluatorsData),
+            },
+            template:
+                this.character.templates?.evaluationTemplate ||
+                evaluationTemplate,
+        });
+
+        const result = await generateText({
+            runtime: this,
+            context,
+            modelClass: ModelClass.SMALL,
+            // verifiableInferenceAdapter: this.verifiableInferenceAdapter,
+        });
+
+        const evaluators = parseJsonArrayFromText(
+            result,
+        ) as unknown as string[];
+
+        for (const evaluator of this.evaluators) {
+            if (!evaluators?.includes(evaluator.name)) continue;
+
+            if (evaluator.handler)
+                await evaluator.handler(this, message, state, {}, callback);
+        }
+
+        return evaluators;
+    }
+
+    /**
+     * Ensure the existence of a participant in the room. If the participant does not exist, they are added to the room.
+     * @param userId - The user ID to ensure the existence of.
+     * @throws An error if the participant cannot be added.
+     */
+    async ensureParticipantExists(userId: UUID, roomId: UUID) {
+        const participants =
+            await this.databaseAdapter.getParticipantsForAccount(userId);
+
+        if (participants?.length === 0) {
+            await this.databaseAdapter.addParticipant(userId, roomId);
+        }
+    }
+
+    /**
+     * Ensure the existence of a user in the database. If the user does not exist, they are added to the database.
+     * @param userId - The user ID to ensure the existence of.
+     * @param userName - The user name to ensure the existence of.
+     * @returns
+     */
+
+    async ensureUserExists(
+        userId: UUID,
+        userName: string | null,
+        name: string | null,
+        email?: string | null,
+        source?: string | null,
+    ) {
+        const account = await this.databaseAdapter.getAccountById(userId);
+        if (!account) {
+            await this.databaseAdapter.createAccount({
+                id: userId,
+                name: name || this.character.name || "Unknown User",
+                username: userName || this.character.username || "Unknown",
+                // TODO: We might not need these account pieces
+                email: email || this.character.email || userId,
+                // When invoke ensureUserExists and saving account.details
+                // Performing a complete JSON.stringify on character will cause a TypeError: Converting circular structure to JSON error in some more complex plugins.
+                details: this.character ? Object.assign({}, this.character, {
+                    source,
+                    plugins: this.character?.plugins?.map((plugin) => plugin.name),
+                }) : { summary: "" },
+            });
+            elizaLogger.success(`User ${userName} created successfully.`);
+        }
+    }
+
+    async ensureParticipantInRoom(userId: UUID, roomId: UUID) {
+        const participants =
+            await this.databaseAdapter.getParticipantsForRoom(roomId);
+        if (!participants.includes(userId)) {
+            await this.databaseAdapter.addParticipant(userId, roomId);
+            if (userId === this.agentId) {
+                elizaLogger.log(
+                    `Agent ${this.character.name} linked to room ${roomId} successfully.`,
+                );
+            } else {
+                elizaLogger.log(
+                    `User ${userId} linked to room ${roomId} successfully.`,
+                );
+            }
+        }
+    }
+
+    async ensureConnection(
+        userId: UUID,
+        roomId: UUID,
+        userName?: string,
+        userScreenName?: string,
+        source?: string,
+    ) {
+        await Promise.all([
+            this.ensureUserExists(
+                this.agentId,
+                this.character.username ?? "Agent",
+                this.character.name ?? "Agent",
+                source,
+            ),
+            this.ensureUserExists(
+                userId,
+                userName ?? "User" + userId,
+                userScreenName ?? "User" + userId,
+                source,
+            ),
+            this.ensureRoomExists(roomId),
+        ]);
+
+        await Promise.all([
+            this.ensureParticipantInRoom(userId, roomId),
+            this.ensureParticipantInRoom(this.agentId, roomId),
+        ]);
+    }
+
+    /**
+     * Ensure the existence of a room between the agent and a user. If no room exists, a new room is created and the user
+     * and agent are added as participants. The room ID is returned.
+     * @param userId - The user ID to create a room with.
+     * @returns The room ID of the room between the agent and the user.
+     * @throws An error if the room cannot be created.
+     */
+    async ensureRoomExists(roomId: UUID) {
+        const room = await this.databaseAdapter.getRoom(roomId);
+        if (!room) {
+            await this.databaseAdapter.createRoom(roomId);
+            elizaLogger.log(`Room ${roomId} created successfully.`);
+        }
+    }
+
+    /**
+     * Compose the state of the agent into an object that can be passed or used for response generation.
+     * @param message The message to compose the state from.
+     * @returns The state of the agent.
+     */
+    async composeState(
+        message: Memory,
+        additionalKeys: { [key: string]: unknown } = {},
+    ): Promise<State> {
+        const { userId, roomId } = message;
+        const agentId = this.agentId;
+
+        // Fetch actors, goals, recent messages
+        const [actorsData, goalsData, recentMessagesData] = await Promise.all([
+            getActorDetails({ runtime: this, roomId }),
+            getGoals({ runtime: this, roomId }),
+            this.messageManager.getMemories({ roomId, count: this.#conversationLength }),
+        ]);
+
+        // Format basic state components
+        const actors = formatActors({ actors: actorsData });
+        const goals = formatGoalsAsString({ goals: goalsData });
+        const recentMessages = formatMessages({
+            messages: recentMessagesData,
+            actors: actorsData,
+        });
+
+        // Initial state object
+        const initialState = {
+            userId: userId,
+            agentId: agentId,
+            bio: Array.isArray(this.character.bio) ? this.character.bio.join("\n") : this.character.bio,
+            lore: this.character.lore?.join("\n") || "",
+            messageDirections: "", // Placeholder
+            postDirections: "", // Placeholder
+            roomId: roomId,
+            agentName: this.character.name,
+            senderName: actorsData.find(a => a.id === userId)?.name || "Unknown Sender",
+            actors: actors,
+            actorsData: actorsData,
+            goals: goals,
+            goalsData: goalsData,
+            recentMessages: recentMessages,
+            recentMessagesData: recentMessagesData,
+            ...additionalKeys
+        } as State;
+
+        // Validate and filter evaluators and actions asynchronously
+        const evaluatorPromises = this.evaluators.map(async (evaluator) => {
+            const isValid = await evaluator.validate(this, message, initialState);
+            return isValid ? evaluator : null;
+        });
+
+        const actionPromises = this.actions.map(async (action) => {
+            const isValid = await action.validate(this, message, initialState);
+            return isValid ? action : null;
+        });
+
+        // Resolve promises and filter out nulls
+        const [resolvedEvaluators, resolvedActions] = await Promise.all([
+            Promise.all(evaluatorPromises).then(results => results.filter((e): e is Evaluator => e !== null)),
+            Promise.all(actionPromises).then(results => results.filter((a): a is Action => a !== null))
+        ]);
+
+        // Assign providers directly (already an array)
+        const resolvedProviders: Provider[] = this.providers;
+
+        // Get context from providers
+        const providerContextPromises = resolvedProviders.map(async (provider) => {
+            try {
+                const context = await provider.get(this, message, initialState);
+                return typeof context === 'string' ? context : JSON.stringify(context);
+            } catch (error) {
+                elizaLogger.error(`Error getting context from provider: ${error}`);
+                return ""; // Return empty string on error
+            }
+        });
+
+        const providerContexts = (await Promise.all(providerContextPromises)).filter(Boolean).join('\n\n');
+
+        // Prepare action state
+        const actionState = {
+            actionNames:
+                "Possible response actions: " + formatActionNames(resolvedActions),
+            actions:
+                resolvedActions.length > 0
+                    ? addHeader(
+                        "# Available Actions",
+                        formatActions(resolvedActions),
+                    )
+                    : "",
+            actionExamples:
+                resolvedActions.length > 0
+                    ? addHeader(
+                        "# Action Examples",
+                        composeActionExamples(resolvedActions, 10),
+                    )
+                    : "",
+            evaluatorsData: resolvedEvaluators,
+            evaluators:
+                resolvedEvaluators.length > 0
+                    ? formatEvaluators(resolvedEvaluators)
+                    : "",
+            evaluatorNames:
+                resolvedEvaluators.length > 0
+                    ? formatEvaluatorNames(resolvedEvaluators)
+                    : "",
+            evaluatorExamples:
+                resolvedEvaluators.length > 0
+                    ? formatEvaluatorExamples(resolvedEvaluators)
+                    : "",
+            providers: addHeader(
+                `# Additional Information About ${this.character.name} and The World`,
+                providerContexts,
+            ),
+        };
+
+        const state: State = {
+            ...initialState,
+            ...actionState,
+            // recentMessagesData already assigned in initialState
+            currentModelProvider: this.modelProvider!,
+            currentClientName: (message as any).clientName,
+            availableProviders: [
+                this.modelProvider!,
+                this.imageModelProvider!,
+                this.imageVisionModelProvider!
+            ].filter((p, i, a) => a.indexOf(p) === i),
+            modelProvider: this.modelProvider!,
+            // recentMessages already assigned in initialState
+            // recentPosts needs calculation if required
+            // recentInteractionsData needs calculation if required
+        };
+
+        // Get knowledge context only if RAG is enabled
+        let knowledgeContext = "";
+        let ragKnowledgeData: RAGKnowledgeItem[] = [];
+        if (this.character.settings && this.character.settings.ragKnowledge) {
+            try {
+                const knowledgeItems = await this.ragKnowledgeManager.getKnowledge({
+                    query: message.content.text,
+                    conversationContext: state.recentMessages, // Use state.recentMessages
+                    limit: 5,
+                });
+                if (knowledgeItems && knowledgeItems.length > 0) {
+                    knowledgeContext = addHeader(
+                        "# Relevant Background Knowledge",
+                        knowledgeItems
+                            .map((item) => item.content.text)
+                            .join("\n\n---\n\n"),
+                    );
+                    ragKnowledgeData = knowledgeItems;
+                }
+            } catch (error) {
+                elizaLogger.error("Error fetching RAG knowledge:", error);
+            }
+        }
+
+        state.knowledge = knowledgeContext;
+        state.ragKnowledgeData = ragKnowledgeData;
+
+        // Update state with recent message context (might involve reformatting/trimming)
+        await this.updateRecentMessageState(state);
+
+        return state;
+    }
+
+    async updateRecentMessageState(state: State): Promise<State> {
+        const conversationLength = this.getConversationLength();
+        const recentMessagesData = await this.messageManager.getMemories({
+            roomId: state.roomId,
+            count: conversationLength,
+            unique: false,
+        });
+
+        const recentMessages = formatMessages({
+            actors: state.actorsData ?? [],
+            messages: recentMessagesData.map((memory: Memory) => {
+                const newMemory = { ...memory };
+                delete newMemory.embedding;
+                return newMemory;
+            }),
+        });
+
+        let allAttachments: Media[] = [];
+
+        if (recentMessagesData && Array.isArray(recentMessagesData)) {
+            const lastMessageWithAttachment = recentMessagesData.find(
+                (msg) =>
+                    msg.content.attachments &&
+                    msg.content.attachments.length > 0,
+            );
+
+            if (lastMessageWithAttachment) {
+                const lastMessageTime =
+                    lastMessageWithAttachment?.createdAt ?? Date.now();
+                const oneHourBeforeLastMessage =
+                    lastMessageTime - 60 * 60 * 1000; // 1 hour before last message
+
+                allAttachments = recentMessagesData
+                    .filter((msg) => {
+                        const msgTime = msg.createdAt ?? Date.now();
+                        return msgTime >= oneHourBeforeLastMessage;
+                    })
+                    .flatMap((msg) => msg.content.attachments || []);
+            }
+        }
+
+        const formattedAttachments = allAttachments
+            .map(
+                (attachment) =>
+                    `ID: ${attachment.id}
+Name: ${attachment.title}
+URL: ${attachment.url}
+Type: ${attachment.source}
+Description: ${attachment.description}
+Text: ${attachment.text}
+    `,
+            )
+            .join("\n");
+
+        return {
+            ...state,
+            recentMessages: addHeader(
+                "# Conversation Messages",
+                recentMessages,
+            ),
+            recentMessagesData,
+            attachments: formattedAttachments,
+        } as State;
+    }
+}
+
+const formatKnowledge = (knowledge: KnowledgeItem[]) => {
+    // Group related content in a more natural way
+    return knowledge.map(item => {
+        // Get the main content text
+        const text = item.content.text;
+
+        // Clean up formatting but maintain natural text flow
+        const cleanedText = text
+            .trim()
+            .replace(/\n{3,}/g, '\n\n'); // Replace excessive newlines
+
+        return cleanedText;
+    }).join('\n\n'); // Separate distinct pieces with double newlines
+};

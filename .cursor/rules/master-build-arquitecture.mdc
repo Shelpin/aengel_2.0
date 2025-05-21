@@ -1,0 +1,400 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Master Build Architecture Rule
+
+## Purpose
+This rule establishes the architectural principles and build processes for ElizaOS packages to ensure consistent compilation, proper dependency management, and elimination of circular dependencies.
+
+## Requirements
+
+### 1. Package Dependency Architecture
+
+All packages must adhere to the following dependency principles:
+
+1. **Avoid Circular Dependencies**
+   - Packages must not have circular import dependencies
+   - Extract shared types to a dedicated `@elizaos/types` package
+   - Use dependency injection or dynamic imports for unavoidable circular references
+
+2. **Package Namespacing**
+   - Core packages use `@elizaos/*` namespace
+   - Plugin packages use `@elizaos-plugins/*` namespace
+   - Maintain consistent imports across the codebase
+
+3. **Module Type Standards**
+   - Clearly specify module type in package.json:
+   ```json
+   {
+     "type": "module",
+     "exports": {
+       ".": {
+         "types": "./dist/index.d.ts",
+         "import": "./dist/index.js",
+         "require": "./dist/index.cjs"
+       }
+     }
+   }
+   ```
+
+### 2. TypeScript Configuration
+
+1. **Base TypeScript Configuration**
+   - All packages must extend from a common base configuration:
+   ```json
+   {
+     "compilerOptions": {
+       "target": "ES2021",
+       "module": "NodeNext",
+       "moduleResolution": "NodeNext",
+       "declaration": true,
+       "declarationMap": true,
+       "sourceMap": true,
+       "strict": true,
+       "composite": true
+     }
+   }
+   ```
+
+2. **Path Mapping for Internal Dependencies**
+   - Use proper path mapping for workspace packages
+   - Example for core package:
+   ```json
+   {
+     "paths": {
+       "@elizaos/types": ["../types/dist"]
+     }
+   }
+   ```
+
+3. **Common Build Scripts**
+   - Each package must implement:
+   ```json
+   {
+     "scripts": {
+       "build": "tsc -p tsconfig.build.json",
+       "clean": "rimraf dist"
+     }
+   }
+   ```
+
+### 3. Package Build Order
+
+Build packages in the following order to respect dependencies:
+
+1. `@elizaos/types`
+2. `@elizaos/core`
+3. `@elizaos/adapter-sqlite`
+4. `@elizaos/plugin-bootstrap`
+5. `@elizaos/telegram-client`
+6. `@elizaos/telegram-multiagent`
+7. `@elizaos/agent`
+8. `@elizaos/client-direct`
+9. `@elizaos/cli`
+
+## Implementation Details
+
+### Dependency Management
+
+1. **Types Package Structure**
+   ```
+   packages/types/
+     ├── src/
+     │   ├── common/
+     │   │   └── uuid.ts
+     │   ├── database/
+     │   │   └── adapter.ts
+     │   └── index.ts
+     ├── package.json
+     ├── tsconfig.json
+     └── tsconfig.build.json
+   ```
+Runtime Compatibility and Troubleshooting
+
+Native Modules
+
+Rebuild native packages like better-sqlite3 if needed:
+
+NODE_GYP_FORCE_PYTHON=python3 pnpm rebuild better-sqlite3
+
+Node.js Compatibility
+
+Use Node.js v23.3.0 minimum.
+2. **Importing Shared Types**
+   ```typescript
+   // Instead of importing from package with potential circular dependency
+   // import { UUID } from '@elizaos/core';
+
+   // Import from types package
+   import { UUID } from '@elizaos/types';
+   ```
+
+3. **Native Module Compatibility**
+   - Ensure native modules like `better-sqlite3` are compatible with Node.js v23.3
+   - Rebuild native modules if necessary:
+   ```bash
+   NODE_GYP_FORCE_PYTHON=python3 pnpm rebuild better-sqlite3
+   ```
+
+### Build Process
+
+1. **Standard Build Commands**
+   ```bash
+   # Clean existing build artifacts
+   pnpm run clean
+
+   # Build all packages in order
+   pnpm build
+
+   # Full clean build with dependency reinstallation
+   pnpm run build:full
+
+   # Verify build outputs
+   pnpm run build:verify
+   ```
+
+2. **Verification Steps**
+   - Check for declaration files (.d.ts) in each package's dist directory
+   - Verify runtime module resolution with test imports
+   - Ensure all TypeScript errors are resolved
+   - Test for circular dependencies using tools like `madge`
+
+3. **Runtime Module Resolution Testing**
+   ```javascript
+   // Test core functionality
+   try {
+     const core = require('@elizaos/core');
+     console.log('Core loaded successfully');
+   } catch (error) {
+     console.error('Failed to load core:', error);
+   }
+   ```
+
+### Resolving Circular Dependencies
+
+1. **Package-Level Circular Dependencies**
+   - Extract shared interfaces to `@elizaos/types`
+   - Use dependency injection pattern
+   - Implement dynamic imports for specific cases
+
+2. **File-Level Circular Dependencies**
+   - Create interface files to break circular references
+   - Use dependency injection
+   - Implement lazy initialization patterns
+
+   Example:
+   ```typescript
+   // interfaces/shared.ts
+   export interface ManagerInterface {
+     handleEvent(event: any): void;
+   }
+
+   // Instead of direct imports, use interfaces
+   import { ManagerInterface } from './interfaces/shared';
+
+   export class Service {
+     constructor(private manager: ManagerInterface) {}
+   }
+   ```
+
+### Module Type Compatibility
+
+1. **ESM and CommonJS Compatibility**
+   - Configure dual package hazard handling in package.json:
+   ```json
+   {
+     "type": "module",
+     "exports": {
+       ".": {
+         "import": "./dist/index.js",
+         "require": "./dist/index.cjs"
+       }
+     }
+   }
+   ```
+
+2. **Import Syntax**
+   - ESM imports: `import { Something } from '@elizaos/core';`
+   - CommonJS imports: `const { Something } = require('@elizaos/core');`
+   - Dynamic imports: `const module = await import('@elizaos/core');`
+
+## Troubleshooting
+
+### Common Build Issues
+
+1. **"Cannot find module" Errors**
+   - Verify package is installed with `pnpm list @elizaos/missing-package`
+   - Check for correct import path with correct namespace
+   - Rebuild the dependency with `pnpm build -F @elizaos/dependency`
+   - Check tsconfig.json path mappings
+
+2. **TypeScript Errors**
+   - Resolve missing types with `pnpm add -D @types/package`
+   - Check for type compatibility between packages
+   - Update path mappings in tsconfig.json
+   - Run `pnpm exec tsc --noEmit` for type checking without emitting files
+
+3. **Declaration Files Not Generating**
+   - Ensure `declaration: true` in tsconfig.json
+   - Check for syntax errors preventing compilation
+   - Verify output directory permissions
+   - Run with verbose logging: `tsc -p tsconfig.json --listEmittedFiles`
+
+4. **Namespace Inconsistencies**
+   - Use the namespace migration script to identify inconsistencies:
+   ```bash
+   node namespace-migration.js
+   ```
+   - Update imports to use correct namespaces:
+   ```typescript
+   // From
+   import { Plugin } from '@elizaos/plugin-name';
+   // To
+   import { Plugin } from '@elizaos-plugins/plugin-name';
+   ```
+
+5. **Node.js Version Compatibility**
+   - Use Node.js v23.3.0 (recommended)
+   - Rebuild native modules with:
+   ```bash
+   pnpm rebuild
+   ```
+   - For better-sqlite3 issues:
+   ```bash
+   NODE_GYP_FORCE_PYTHON=python3 pnpm rebuild better-sqlite3
+   ```
+
+### Success Verification
+
+A successful build meets these criteria:
+1. All packages build without errors
+2. Declaration files (.d.ts) are generated for all packages
+3. Runtime imports succeed without "Cannot find module" errors
+4. No circular dependencies exist
+5. All packages use consistent TypeScript configurations
+6. Native modules are compatible with Node.js v23.3 
+
+## Rule Flexibility and Amendment
+
+### Purpose
+To maintain a balance between consistency and adaptability as the project evolves, rules must be allowed to change when they are found to be incorrect, create biases, or impede the debugging process.
+
+### Amendment Process
+
+1. **Identification**
+   - When an inconsistency, error, or negative bias is identified in a rule, document it with:
+     - The specific rule and section
+     - The observed issue (inconsistency, error, technical limitation)
+     - Impact on build/debug processes
+     - Proposed solution
+
+2. **Temporary Exception**
+   - For urgent build issues, a temporary exception to a rule may be granted by documenting:
+     ```
+     RULE EXCEPTION: [Rule Number/Name]
+     REASON: [Brief justification]
+     SCOPE: [Limited scope of the exception]
+     EXPIRATION: [When this exception should be reconsidered]
+     ```
+   - Place this documentation in the affected file or build script
+
+3. **Rule Amendment**
+   - Rules can be formally amended through:
+     - Pull request with the proposed change
+     - Documentation of the rationale
+     - Evidence of the issue (build logs, debugging sessions)
+     - Peer review by at least one other developer
+
+4. **Documentation Requirements**
+   - All rule amendments must be:
+     - Clearly marked with a changelog entry
+     - Version controlled
+     - Communicated to the development team
+     - Tested to ensure they solve the original issue
+
+5. **Automated Rule Assessment**
+   - AI agents and automated tools are granted authority to:
+     - Scan all rules for inconsistencies, contradictions, or errors
+     - Report detected issues with detailed analysis
+     - Propose specific modifications to resolve identified problems
+     - Implement changes to rules when inconsistencies directly impact build processes
+   - For agent-driven rule modifications:
+     - The agent must clearly document the detected inconsistency
+     - Changes must be logged with before/after comparisons
+     - Developers must be notified of automated changes
+     - Critical rule eliminations require human review within 48 hours
+
+### Balancing Consistency and Adaptability
+
+When determining if a rule should be amended, consider:
+
+1. **Build Impact**
+   - Does the current rule prevent successful builds?
+   - Does it significantly complicate the debugging process?
+   - Does it conflict with Node.js v23.3 compatibility?
+
+2. **Developer Experience**
+   - Does the rule create unnecessary friction?
+   - Is there a simpler approach that maintains quality?
+   - Does it conflict with established TypeScript/JavaScript practices?
+
+3. **Architectural Integrity**
+   - Will changing the rule compromise the integrity of the architecture?
+   - Does the amendment maintain separation of concerns?
+   - Is backward compatibility preserved where needed?
+
+### Exception Tracking
+
+All active rule exceptions must be tracked in a centralized location:
+
+```
+/reports/rule_exceptions.md
+```
+
+With format:
+```markdown
+# Rule Exceptions
+
+## Active Exceptions
+
+### Exception 1: [Brief Title]
+- **Rule**: [Rule number and name]
+- **Date Created**: YYYY-MM-DD
+- **Created By**: [Developer name or Agent ID]
+- **Reason**: [Brief explanation]
+- **Planned Resolution**: [How/when this will be properly fixed]
+- **Expiration**: [Date when this exception expires]
+
+## Resolved Exceptions
+
+### Exception 2: [Brief Title]
+- **Rule**: [Rule number and name]
+- **Date Created**: YYYY-MM-DD
+- **Date Resolved**: YYYY-MM-DD
+- **Resolution**: [How it was resolved]
+```
+
+### Agent-Driven Rule Modifications Log
+
+Agent-driven rule modifications must be tracked in:
+
+```
+/reports/agent_rule_modifications.md
+```
+
+With format:
+```markdown
+# Agent Rule Modifications
+
+## [Date: YYYY-MM-DD]
+
+### Modification 1: [Brief Title]
+- **Agent ID**: [ID of the agent that made the change]
+- **Rule Modified**: [Rule number and name]
+- **Issue Detected**: [Description of inconsistency or error]
+- **Modification Made**: [Summary of changes]
+- **Justification**: [Why this change was necessary]
+- **Developer Review**: [ ] Pending [ ] Approved [ ] Reverted
+``` 

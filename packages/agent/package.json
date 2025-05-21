@@ -1,0 +1,73 @@
+{
+  "name": "@elizaos/agent",
+  "type": "module",
+  "main": "./dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "prebuild": "rm -rf dist tsconfig.build.tsbuildinfo",
+    "build": "pnpm exec tsc -b tsconfig.build.json",
+    "start": "node dist/index.js",
+    "start:dev": "ts-node src/index.ts",
+    "start:prod": "node dist/index.js",
+    "build:types": "tsc --build tsconfig.build.json",
+    "build:full": "npm run build",
+    "clean": "rm -rf dist",
+    "dev": "tsc -b tsconfig.build.json --watch",
+    "test": "jest",
+    "lint": "eslint src --ext .ts"
+  },
+  "dependencies": {
+    "@elizaos-plugins/clients": "workspace:*",
+    "@elizaos/adapter-sqlite": "workspace:*",
+    "@elizaos/client-direct": "workspace:*",
+    "@elizaos/core": "workspace:*",
+    "@elizaos/plugin-bootstrap": "workspace:*",
+    "@elizaos/telegram-client": "workspace:*",
+    "@elizaos/types": "workspace:*",
+    "ai": "^3.1.1",
+    "bottleneck": "^2.19.5",
+    "chalk": "^5.3.0",
+    "commander": "^10.0.0",
+    "handlebars": "^4.7.8",
+    "js-tiktoken": "^1.0.10",
+    "json5": "^2.2.3",
+    "lodash": "^4.17.21",
+    "moment": "^2.29.4",
+    "node-fetch": "^3.3.2",
+    "node-schedule": "^2.1.1",
+    "node-telegram-bot-api": "^0.64.0",
+    "openai": "^4.24.1",
+    "p-queue": "^8.0.1",
+    "pino": "^8.17.2",
+    "pino-pretty": "^10.3.1",
+    "tsx": "^4.7.0",
+    "unique-names-generator": "^4.7.1",
+    "uuid": "^9.0.1",
+    "ws": "^8.16.0",
+    "yaml": "^2.3.4",
+    "yargs": "^17.0.33",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/commander": "2.12.5",
+    "@types/json5": "2.2.0",
+    "@types/lodash": "^4.14.202",
+    "@types/node": "22.15.21",
+    "@types/node-schedule": "^2.1.5",
+    "@types/node-telegram-bot-api": "^0.64.2",
+    "@types/pino": "^7.0.5",
+    "@types/uuid": "^9.0.5",
+    "@types/ws": "^8.5.10",
+    "@types/yargs": "17.0.33"
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ]
+}

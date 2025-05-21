@@ -1,0 +1,35 @@
+{
+    "extends": "../../tsconfig.base.json",
+    "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+            "@elizaos/core": [
+                "../core/src"
+            ],
+            "@elizaos/core/*": [
+                "../core/src/*"
+            ],
+            "@elizaos/types": [
+                "../types/src"
+            ],
+            "@elizaos/types/*": [
+                "../types/src/*"
+            ]
+        }
+        // "types": [  // Temporarily removed to see if default type resolution works
+        //     "node",
+        //     "jest"
+        // ]
+    },
+    "include": [
+        "src/**/*"
+    ],
+    "references": [
+        {
+            "path": "../core"
+        },
+        {
+            "path": "../types"
+        }
+    ]
+}

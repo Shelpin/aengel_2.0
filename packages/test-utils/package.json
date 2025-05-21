@@ -1,0 +1,27 @@
+{
+    "name": "@elizaos/test-utils",
+    "version": "0.1.0",
+    "type": "module",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "import": "./dist/index.js",
+            "types": "./dist/index.d.ts"
+        }
+    },
+    "files": [
+        "dist/**/*"
+    ],
+    "dependencies": {
+        "@elizaos/core": "workspace:*",
+        "@elizaos/types": "workspace:*"
+    },
+    "scripts": {
+        "prebuild": "rimraf dist",
+        "build": "tsc -b tsconfig.build.json",
+        "build:types": "tsc -b tsconfig.build.json",
+        "test": "jest"
+    },
+    "devDependencies": {}
+}

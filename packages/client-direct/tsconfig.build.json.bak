@@ -1,0 +1,52 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "skipLibCheck": true,
+    "noEmitOnError": false,
+    "isolatedModules": true,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "declarationDir": "dist",
+    "baseUrl": ".",
+    "paths": {
+      "@elizaos/core/*": [
+        "../core/dist/*"
+      ],
+      "@elizaos/core": [
+        "../core/dist/index.d.ts"
+      ],
+      "@elizaos/agent/*": [
+        "../agent/dist/*"
+      ],
+      "@elizaos/agent": [
+        "../agent/dist/index.d.ts"
+      ]
+    },
+    "noEmit": false,
+    "declarationMap": true,
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "NodeNext",
+    "target": "es2022",
+    "module": "NodeNext",
+    "lib": [
+      "es2022",
+      "dom"
+    ],
+    "strict": true,
+    "resolveJsonModule": true,
+    "rootDir": "src",
+    "outDir": "dist"
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "dist",
+    "node_modules",
+    "src/**/*.spec.ts",
+    "src/**/*.test.ts"
+  ]
+}

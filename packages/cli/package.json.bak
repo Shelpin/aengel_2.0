@@ -1,0 +1,32 @@
+{
+  "name": "cli",
+  "version": "0.25.9",
+  "main": "./dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsup && tsc -p tsconfig.build.json",
+    "prebuild": "rimraf dist",
+    "build:types": "tsc -p tsconfig.build.json",
+    "build:full": "npm run build",
+    "clean": "rm -rf dist",
+    "dev": "tsup --watch"
+  },
+  "bin": {
+    "elizaos": "index.js"
+  },
+  "author": "Odilitime",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "commander": "^13.1.0"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "type": "module",
+  "types": "./dist/index.d.ts"
+}

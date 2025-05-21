@@ -1,0 +1,23 @@
+{
+    "name": "@elizaos/PACKAGE_NAME",
+    "version": "0.1.0",
+    "type": "module",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "import": "./dist/index.js",
+            "require": "./dist/index.cjs",
+            "types": "./dist/index.d.ts"
+        }
+    },
+    "scripts": {
+        "prebuild": "rimraf dist",
+        "build": "tsc -p tsconfig.build.json && node ../../scripts/build/postbuild-dual.js",
+        "test": "jest",
+        "lint": "eslint src --ext .ts"
+    },
+    "files": [
+        "dist"
+    ]
+}

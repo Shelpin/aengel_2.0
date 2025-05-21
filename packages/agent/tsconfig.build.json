@@ -1,0 +1,36 @@
+{
+  "extends": "../../tsconfig.build.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "composite": true,
+    "declaration": true,
+    "sourceMap": true,
+    "baseUrl": "."
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "src/test_resources/**/*",
+    "**/__tests__/**",
+    "**/node_modules/**"
+  ],
+  "references": [
+    {
+      "path": "../core"
+    },
+    {
+      "path": "../adapter-sqlite"
+    },
+    {
+      "path": "../dynamic-imports"
+    },
+    {
+      "path": "../plugin-bootstrap"
+    },
+    {
+      "path": "../client-direct/tsconfig.build.json"
+    }
+  ]
+}

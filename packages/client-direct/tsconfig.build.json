@@ -1,0 +1,30 @@
+{
+  "extends": "../../tsconfig.build.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "outDir": "dist",
+    "rootDir": "src",
+    "composite": true,
+    "declaration": true,
+    "sourceMap": true,
+    "skipLibCheck": true,
+    "noEmitOnError": false,
+    "strict": false,
+    "noImplicitAny": false
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "**/__tests__/**",
+    "**/node_modules/**"
+  ],
+  "references": [
+    {
+      "path": "../types"
+    },
+    {
+      "path": "../core"
+    }
+  ]
+}

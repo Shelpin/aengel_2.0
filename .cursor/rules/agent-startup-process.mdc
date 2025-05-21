@@ -1,0 +1,126 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Agent Startup Process Rule
+
+## Overview
+This rule defines the standard process for initializing and starting ElizaOS agents to ensure consistent operation and proper resource configuration.
+
+## Implementation Details
+
+### Startup Sequence
+
+1. **Environment Initialization**
+   - Load environment variables from `.env` file
+   - Set agent-specific environment variables:
+     ```bash
+     export AGENT_ID=eth_memelord_9000
+     export AGENT_PORT=3000
+     export RELAY_SERVER_URL=http://localhost:4000
+     export TELEGRAM_BOT_TOKEN=$(grep "^TELEGRAM_BOT_TOKEN_${AGENT_ID}=" .env | cut -d '=' -f2)
+     export CHARACTER_PATH="packages/agent/src/characters/${AGENT_ID}.json"
+     ```
+   - Initialize logging system
+
+2. **Database Initialization**
+   - Connect to SQLite database (see File-Based DB Rule)
+   - Run migrations if needed
+   - Verify database schema integrity
+
+3. **Resource Allocation**
+   - Allocate ports for agent communication
+   - Initialize API endpoints
+   - Create logging directory for agent-specific logs
+
+4. **Applying Patches**
+   - Apply any necessary patches before agent startup
+   - Use the patches script: `node patches/start-agent-with-patches.js`
+   - Verify patch application success
+
+5. **Agent Configuration**
+   - Load agent-specific configuration from character file
+   - Initialize agent capabilities based on configuration
+   - Set up routing for multi-agent coordination
+
+6. **Model Initialization**
+   - Initialize LLM connections
+   - Set up embedding model
+   - Configure model settings from environment variables
+
+### Standard Startup Command
+
+The standard command to start an agent is:
+
+```bash
+# Using the launch-agent.sh script (recommended):
+./scripts/launch-agent.sh eth_memelord_9000 3000
+
+# Or manually with the patching system:
+node patches/start-agent-with-patches.js \
+  --isRoot \
+  --characters="packages/agent/src/characters/eth_memelord_9000.json" \
+  --clients=@elizaos/client-telegram \
+  --plugins=@elizaos/telegram-multiagent \
+  --port=3000 \
+  --log-level=debug
+```
+
+Where the character JSON file includes:
+```json
+{
+  "name": "eth_memelord_9000",
+  "capabilities": ["meme-tracking", "ethereum-monitoring"],
+  "model": "default-model",
+  "ports": {
+    "webhook": 3000,
+    "http": 3000,
+    "router": 4000
+  }
+}
+```
+
+### Agent-Specific Environment Variables
+
+Each agent requires these environment variables:
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| AGENT_ID | The unique identifier of the agent | eth_memelord_9000 |
+| AGENT_PORT | The port to run the agent on | 3000 |
+| TELEGRAM_BOT_TOKEN | Token for Telegram API access | 123456:ABC-DEF1234 |
+| CHARACTER_PATH | Path to the character JSON file | packages/agent/src/characters/eth_memelord_9000.json |
+| RELAY_SERVER_URL | URL of the relay server | http://localhost:4000 |
+| LOG_LEVEL | Level of logging detail | debug |
+
+### Health Check Procedure
+
+After startup:
+1. Verify all services are running
+2. Check database connection
+3. Test API endpoints with basic requests
+4. Verify webhook functionality if applicable
+5. Confirm model connectivity
+
+### Troubleshooting Startup Failures
+
+1. **Database Connection Issues**
+   - Check if database file exists
+   - Verify permissions on database file
+   - Run `node patches/init_db.js` to initialize database
+
+2. **Port Conflicts**
+   - Use different ports in configuration
+   - Check for running processes on ports
+   - See Agent Port Configuration Rule for details
+
+3. **Model Initialization Failures**
+   - Verify API keys in environment variables
+   - Check network connectivity to model provider
+   - Ensure compatible model versions
+
+4. **Missing Dependencies**
+   - Run `pnpm install` to install missing packages
+   - Check for version conflicts
+   - Verify Node.js version compatibility 

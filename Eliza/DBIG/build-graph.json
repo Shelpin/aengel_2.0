@@ -1,0 +1,806 @@
+{
+  "adapter-sqlite/__tests__/sqlite-adapter.test.ts": [
+    "adapter-sqlite/src/index.ts",
+    "adapter-sqlite/src/sqlite_vec.ts",
+    "core/index.d.ts"
+  ],
+  "adapter-sqlite/index.d.ts": [
+    "adapter-sqlite/src/index.ts"
+  ],
+  "adapter-sqlite/src/index.ts": [
+    "adapter-sqlite/src/sqliteTables.ts",
+    "adapter-sqlite/src/sqlite_vec.ts",
+    "core/index.d.ts"
+  ],
+  "adapter-sqlite/src/public-api.ts": [
+    "adapter-sqlite/src/index.ts"
+  ],
+  "adapter-sqlite/src/sqliteTables.ts": [
+    "core/index.d.ts"
+  ],
+  "adapter-sqlite/src/sqlite_vec.ts": [
+    "core/index.d.ts"
+  ],
+  "adapter-sqlite/tsup.config.ts": [],
+  "adapter-sqlite/vitest.config.ts": [],
+  "agent/index.d.ts": [
+    "agent/src/index.ts"
+  ],
+  "agent/src/__tests__/client-type-identification.test.ts": [
+    "core/public-api.d.ts"
+  ],
+  "agent/src/defaultCharacter.ts": [
+    "core/public-api.d.ts"
+  ],
+  "agent/src/index.ts": [
+    "adapter-sqlite/index.d.ts",
+    "agent/src/defaultCharacter.ts",
+    "client-direct/index.d.ts",
+    "core/public-api.d.ts",
+    "plugin-bootstrap/index.d.ts"
+  ],
+  "agent/src/public-api.ts": [
+    "agent/src/index.ts"
+  ],
+  "agent/tsup.config.ts": [],
+  "agent/types/ai.d.ts": [],
+  "client-direct/index.d.ts": [
+    "client-direct/src/index.ts"
+  ],
+  "client-direct/src/api.ts": [
+    "core/public-api.d.ts"
+  ],
+  "client-direct/src/index.ts": [
+    "client-direct/src/api.ts",
+    "client-direct/src/verifiable-log-api.ts",
+    "core/index.d.ts"
+  ],
+  "client-direct/src/public-api.ts": [
+    "client-direct/src/index.ts"
+  ],
+  "client-direct/src/verifiable-log-api.ts": [
+    "core/public-api.d.ts"
+  ],
+  "client-direct/tsup.config.ts": [],
+  "clients/index.ts": [
+    "clients/telegram/src/index.ts"
+  ],
+  "clients/telegram/index.d.ts": [
+    "clients/telegram/src/index.ts"
+  ],
+  "clients/telegram/src/index.ts": [],
+  "clients/telegram/src/public-api.ts": [
+    "clients/telegram/src/index.ts"
+  ],
+  "clients/telegram/test-direct-import.ts": [],
+  "clients/telegram/test-import.ts": [],
+  "core/__tests__/actions.test.ts": [
+    "core/src/actions.ts",
+    "core/src/types.ts"
+  ],
+  "core/__tests__/cache.test.ts": [
+    "core/src/cache.ts"
+  ],
+  "core/__tests__/context.test.ts": [
+    "core/src/context.ts",
+    "core/src/types.ts"
+  ],
+  "core/__tests__/database.test.ts": [
+    "core/src/database.ts",
+    "core/src/types.ts"
+  ],
+  "core/__tests__/embedding.test.ts": [
+    "core/src/embedding.ts",
+    "core/src/settings.ts",
+    "core/src/types.ts"
+  ],
+  "core/__tests__/env.test.ts": [],
+  "core/__tests__/environment.test.ts": [
+    "core/src/environment.ts",
+    "core/src/types.ts"
+  ],
+  "core/__tests__/evaluators.test.ts": [
+    "core/src/evaluators.ts",
+    "core/src/types.ts"
+  ],
+  "core/__tests__/goals.test.ts": [
+    "core/src/cache.ts",
+    "core/src/goals.ts",
+    "core/src/types.ts"
+  ],
+  "core/__tests__/knowledge.test.ts": [
+    "core/src/knowledge.ts",
+    "core/src/runtime.ts",
+    "core/src/types.ts"
+  ],
+  "core/__tests__/memory.test.ts": [
+    "core/src/cache.ts",
+    "core/src/memory.ts",
+    "core/src/types.ts"
+  ],
+  "core/__tests__/messages.test.ts": [
+    "core/src/messages.ts",
+    "core/src/types.ts"
+  ],
+  "core/__tests__/mockCharacter.ts": [],
+  "core/__tests__/models.test.ts": [
+    "core/src/models.ts",
+    "core/src/types.ts"
+  ],
+  "core/__tests__/parsing.test.ts": [
+    "core/src/parsing.ts"
+  ],
+  "core/__tests__/posts.test.ts": [
+    "core/src/posts.ts",
+    "core/src/types.ts"
+  ],
+  "core/__tests__/providers.test.ts": [
+    "core/src/providers.ts",
+    "core/src/types.ts"
+  ],
+  "core/__tests__/relationships.test.ts": [
+    "core/src/relationships.ts",
+    "core/src/types.ts"
+  ],
+  "core/__tests__/runtime.test.ts": [
+    "core/__tests__/mockCharacter.ts",
+    "core/src/runtime.ts",
+    "core/src/types.ts"
+  ],
+  "core/__tests__/uuid.test.ts": [
+    "core/src/types.ts",
+    "core/src/uuid.ts"
+  ],
+  "core/__tests__/videoGeneration.test.ts": [],
+  "core/index.d.ts": [
+    "core/src/index.ts"
+  ],
+  "core/public-api.d.ts": [
+    "core/src/index.ts"
+  ],
+  "core/src.bak/actions.ts": [
+    "core/src.bak/types.ts"
+  ],
+  "core/src.bak/api/types.ts": [],
+  "core/src.bak/cache.ts": [
+    "core/src.bak/types.ts"
+  ],
+  "core/src.bak/config.ts": [
+    "core/src.bak/utils/module-path.ts"
+  ],
+  "core/src.bak/context.ts": [
+    "core/src.bak/types.ts"
+  ],
+  "core/src.bak/database.ts": [
+    "core/src.bak/database/CircuitBreaker.ts",
+    "core/src.bak/logger.ts",
+    "core/src.bak/types.ts"
+  ],
+  "core/src.bak/database/CircuitBreaker.ts": [],
+  "core/src.bak/embedding.ts": [
+    "core/src.bak/localembeddingManager.ts",
+    "core/src.bak/logger.ts",
+    "core/src.bak/models.ts",
+    "core/src.bak/settings.ts",
+    "core/src.bak/types.ts"
+  ],
+  "core/src.bak/environment.ts": [
+    "core/src.bak/logger.ts",
+    "core/src.bak/types.ts"
+  ],
+  "core/src.bak/evaluators.ts": [
+    "core/src.bak/parsing.ts",
+    "core/src.bak/types.ts"
+  ],
+  "core/src.bak/generation.ts": [
+    "core/src.bak/internal/logger-internal.ts",
+    "core/src.bak/models.ts",
+    "core/src.bak/parsing.ts",
+    "core/src.bak/settings.ts",
+    "core/src.bak/types.ts"
+  ],
+  "core/src.bak/goals.ts": [
+    "core/src.bak/types.ts"
+  ],
+  "core/src.bak/index.ts": [
+    "core/src.bak/actions.ts",
+    "core/src.bak/cache.ts",
+    "core/src.bak/config.ts",
+    "core/src.bak/context.ts",
+    "core/src.bak/database.ts",
+    "core/src.bak/embedding.ts",
+    "core/src.bak/environment.ts",
+    "core/src.bak/evaluators.ts",
+    "core/src.bak/generation.ts",
+    "core/src.bak/goals.ts",
+    "core/src.bak/knowledge.ts",
+    "core/src.bak/logger.ts",
+    "core/src.bak/memory.ts",
+    "core/src.bak/messages.ts",
+    "core/src.bak/models.ts",
+    "core/src.bak/parsing.ts",
+    "core/src.bak/posts.ts",
+    "core/src.bak/providers.ts",
+    "core/src.bak/ragknowledge.ts",
+    "core/src.bak/relationships.ts",
+    "core/src.bak/runtime.ts",
+    "core/src.bak/settings.ts",
+    "core/src.bak/types.ts",
+    "core/src.bak/utils.ts",
+    "core/src.bak/uuid.ts"
+  ],
+  "core/src.bak/internal/index.ts": [
+    "core/src.bak/internal/logger-internal.ts"
+  ],
+  "core/src.bak/internal/logger-internal.ts": [],
+  "core/src.bak/knowledge-bridge.ts": [
+    "core/src.bak/api/types.ts",
+    "core/src.bak/knowledge.ts"
+  ],
+  "core/src.bak/knowledge.ts": [
+    "core/src.bak/api/types.ts",
+    "core/src.bak/logger.ts",
+    "core/src.bak/types.ts"
+  ],
+  "core/src.bak/localembeddingManager.ts": [
+    "core/src.bak/logger.ts",
+    "core/src.bak/utils/module-path.ts"
+  ],
+  "core/src.bak/logger.ts": [],
+  "core/src.bak/memory.ts": [
+    "core/src.bak/embedding.ts",
+    "core/src.bak/logger.ts",
+    "core/src.bak/types.ts"
+  ],
+  "core/src.bak/messages.ts": [
+    "core/src.bak/types.ts"
+  ],
+  "core/src.bak/models.ts": [
+    "core/src.bak/settings.ts",
+    "core/src.bak/types.ts"
+  ],
+  "core/src.bak/parsing.ts": [
+    "core/src.bak/types.ts"
+  ],
+  "core/src.bak/posts.ts": [
+    "core/src.bak/messages.ts",
+    "core/src.bak/types.ts"
+  ],
+  "core/src.bak/providers.ts": [
+    "core/src.bak/types.ts"
+  ],
+  "core/src.bak/public-api.ts": [
+    "core/src.bak/api/types.ts",
+    "core/src.bak/context.ts",
+    "core/src.bak/generation.ts",
+    "core/src.bak/goals.ts",
+    "core/src.bak/knowledge.ts",
+    "core/src.bak/logger.ts",
+    "core/src.bak/parsing.ts",
+    "core/src.bak/runtime.ts",
+    "core/src.bak/types.ts"
+  ],
+  "core/src.bak/ragknowledge.ts": [
+    "core/src.bak/embedding.ts",
+    "core/src.bak/generation.ts",
+    "core/src.bak/logger.ts",
+    "core/src.bak/types.ts",
+    "core/src.bak/uuid.ts"
+  ],
+  "core/src.bak/relationships.ts": [
+    "core/src.bak/types.ts"
+  ],
+  "core/src.bak/runtime.ts": [
+    "core/src.bak/actions.ts",
+    "core/src.bak/context.ts",
+    "core/src.bak/evaluators.ts",
+    "core/src.bak/generation.ts",
+    "core/src.bak/goals.ts",
+    "core/src.bak/internal/logger-internal.ts",
+    "core/src.bak/knowledge-bridge.ts",
+    "core/src.bak/memory.ts",
+    "core/src.bak/messages.ts",
+    "core/src.bak/parsing.ts",
+    "core/src.bak/posts.ts",
+    "core/src.bak/providers.ts",
+    "core/src.bak/ragknowledge.ts",
+    "core/src.bak/settings.ts",
+    "core/src.bak/types.ts",
+    "core/src.bak/uuid.ts"
+  ],
+  "core/src.bak/settings.ts": [
+    "core/src.bak/logger.ts"
+  ],
+  "core/src.bak/test_resources/constants.ts": [
+    "core/src.bak/types.ts"
+  ],
+  "core/src.bak/test_resources/createRuntime.ts": [
+    "adapter-sqlite/index.d.ts",
+    "core/src.bak/database.ts",
+    "core/src.bak/models.ts",
+    "core/src.bak/runtime.ts",
+    "core/src.bak/test_resources/constants.ts",
+    "core/src.bak/test_resources/types.ts",
+    "core/src.bak/types.ts"
+  ],
+  "core/src.bak/test_resources/testSetup.ts": [],
+  "core/src.bak/test_resources/types.ts": [],
+  "core/src.bak/types.ts": [
+    "core/src.bak/api/types.ts"
+  ],
+  "core/src.bak/types/agent-runtime-bridge.ts": [],
+  "core/src.bak/utils.ts": [
+    "core/src.bak/embedding.ts",
+    "core/src.bak/logger.ts",
+    "core/src.bak/runtime.ts"
+  ],
+  "core/src.bak/utils/module-path.ts": [],
+  "core/src.bak/uuid.ts": [
+    "core/src.bak/types.ts"
+  ],
+  "core/src/actions.ts": [
+    "core/src/types.ts"
+  ],
+  "core/src/api/types.ts": [],
+  "core/src/cache.ts": [
+    "core/src/types.ts"
+  ],
+  "core/src/config.ts": [
+    "core/src/utils/module-path.ts"
+  ],
+  "core/src/context.ts": [
+    "core/src/types.ts"
+  ],
+  "core/src/database.ts": [
+    "core/src/database/CircuitBreaker.ts",
+    "core/src/logger.ts",
+    "core/src/types.ts"
+  ],
+  "core/src/database/CircuitBreaker.ts": [],
+  "core/src/embedding.ts": [
+    "core/src/localembeddingManager.ts",
+    "core/src/logger.ts",
+    "core/src/models.ts",
+    "core/src/settings.ts",
+    "core/src/types.ts"
+  ],
+  "core/src/environment.ts": [
+    "core/src/logger.ts",
+    "core/src/types.ts"
+  ],
+  "core/src/evaluators.ts": [
+    "core/src/parsing.ts",
+    "core/src/types.ts"
+  ],
+  "core/src/generation.ts": [
+    "core/src/internal/logger-internal.ts",
+    "core/src/models.ts",
+    "core/src/parsing.ts",
+    "core/src/settings.ts",
+    "core/src/types.ts"
+  ],
+  "core/src/goals.ts": [
+    "core/src/types.ts"
+  ],
+  "core/src/index.ts": [
+    "core/src/config.ts",
+    "core/src/public-api.ts"
+  ],
+  "core/src/internal/index.ts": [
+    "core/src/internal/logger-internal.ts"
+  ],
+  "core/src/internal/logger-internal.ts": [],
+  "core/src/knowledge-bridge.ts": [
+    "core/src/api/types.ts",
+    "core/src/knowledge.ts"
+  ],
+  "core/src/knowledge.ts": [
+    "core/src/api/types.ts",
+    "core/src/logger.ts",
+    "core/src/types.ts"
+  ],
+  "core/src/localembeddingManager.ts": [
+    "core/src/logger.ts",
+    "core/src/utils/module-path.ts"
+  ],
+  "core/src/logger.ts": [],
+  "core/src/memory.ts": [
+    "core/src/embedding.ts",
+    "core/src/logger.ts",
+    "core/src/types.ts"
+  ],
+  "core/src/messages.ts": [
+    "core/src/types.ts"
+  ],
+  "core/src/models.ts": [
+    "core/src/settings.ts",
+    "core/src/types.ts"
+  ],
+  "core/src/parsing.ts": [
+    "core/src/types.ts"
+  ],
+  "core/src/posts.ts": [
+    "core/src/messages.ts",
+    "core/src/types.ts"
+  ],
+  "core/src/providers.ts": [
+    "core/src/types.ts"
+  ],
+  "core/src/public-api.ts": [
+    "core/src/api/types.ts",
+    "core/src/context.ts",
+    "core/src/database.ts",
+    "core/src/embedding.ts",
+    "core/src/generation.ts",
+    "core/src/goals.ts",
+    "core/src/knowledge.ts",
+    "core/src/logger.ts",
+    "core/src/memory.ts",
+    "core/src/messages.ts",
+    "core/src/parsing.ts",
+    "core/src/runtime.ts",
+    "core/src/types.ts",
+    "core/src/utils/module-path.ts"
+  ],
+  "core/src/ragknowledge.ts": [
+    "core/src/embedding.ts",
+    "core/src/generation.ts",
+    "core/src/logger.ts",
+    "core/src/types.ts",
+    "core/src/uuid.ts"
+  ],
+  "core/src/relationships.ts": [
+    "core/src/types.ts"
+  ],
+  "core/src/runtime.ts": [
+    "core/src/actions.ts",
+    "core/src/context.ts",
+    "core/src/evaluators.ts",
+    "core/src/generation.ts",
+    "core/src/goals.ts",
+    "core/src/internal/logger-internal.ts",
+    "core/src/knowledge-bridge.ts",
+    "core/src/memory.ts",
+    "core/src/messages.ts",
+    "core/src/parsing.ts",
+    "core/src/posts.ts",
+    "core/src/providers.ts",
+    "core/src/ragknowledge.ts",
+    "core/src/settings.ts",
+    "core/src/types.ts",
+    "core/src/uuid.ts"
+  ],
+  "core/src/settings.ts": [
+    "core/src/logger.ts"
+  ],
+  "core/src/shims/tokenizers.ts": [],
+  "core/src/test_resources/constants.ts": [
+    "core/src/types.ts"
+  ],
+  "core/src/test_resources/createRuntime.ts": [
+    "core/src/database.ts",
+    "core/src/models.ts",
+    "core/src/runtime.ts",
+    "core/src/test_resources/constants.ts",
+    "core/src/test_resources/types.ts",
+    "core/src/types.ts"
+  ],
+  "core/src/test_resources/testSetup.ts": [],
+  "core/src/test_resources/types.ts": [],
+  "core/src/types.ts": [
+    "core/src/api/types.ts"
+  ],
+  "core/src/types/agent-runtime-bridge.ts": [],
+  "core/src/utils.ts": [
+    "core/src/embedding.ts",
+    "core/src/logger.ts",
+    "core/src/runtime.ts"
+  ],
+  "core/src/utils/module-path.ts": [],
+  "core/src/uuid.ts": [
+    "core/src/types.ts"
+  ],
+  "core/tsup.config.ts": [],
+  "core/types/api/types.d.ts": [],
+  "core/types/context.d.ts": [
+    "core/types/types.d.ts"
+  ],
+  "core/types/embedding.d.ts": [
+    "core/types/types.d.ts"
+  ],
+  "core/types/generation.d.ts": [
+    "core/types/types.d.ts"
+  ],
+  "core/types/goals.d.ts": [
+    "core/types/types.d.ts"
+  ],
+  "core/types/internal/logger-internal.d.ts": [],
+  "core/types/knowledge.d.ts": [
+    "core/types/api/types.d.ts",
+    "core/types/types.d.ts"
+  ],
+  "core/types/localembeddingManager.d.ts": [],
+  "core/types/logger.d.ts": [],
+  "core/types/memory.d.ts": [
+    "core/types/types.d.ts"
+  ],
+  "core/types/models.d.ts": [
+    "core/types/types.d.ts"
+  ],
+  "core/types/parsing.d.ts": [
+    "core/types/types.d.ts"
+  ],
+  "core/types/public-api.d.ts": [
+    "core/types/api/types.d.ts",
+    "core/types/context.d.ts",
+    "core/types/generation.d.ts",
+    "core/types/goals.d.ts",
+    "core/types/knowledge.d.ts",
+    "core/types/logger.d.ts",
+    "core/types/memory.d.ts"
+  ],
+  "core/types/settings.d.ts": [],
+  "core/types/types.d.ts": [
+    "core/types/api/types.d.ts"
+  ],
+  "core/vitest.config.ts": [],
+  "dynamic-imports/index.d.ts": [
+    "dynamic-imports/src/index.ts"
+  ],
+  "dynamic-imports/src/index.ts": [],
+  "dynamic-imports/src/public-api.ts": [
+    "dynamic-imports/src/index.ts"
+  ],
+  "dynamic-imports/tsup.config.ts": [],
+  "plugin-bootstrap/__tests__/actions/continue.test.ts": [
+    "core/index.d.ts",
+    "plugin-bootstrap/src/actions/continue.ts"
+  ],
+  "plugin-bootstrap/__tests__/evaluators/fact.test.ts": [
+    "core/index.d.ts",
+    "plugin-bootstrap/src/evaluators/fact.ts"
+  ],
+  "plugin-bootstrap/__tests__/evaluators/goal.test.ts": [
+    "core/index.d.ts",
+    "plugin-bootstrap/src/evaluators/goal.ts"
+  ],
+  "plugin-bootstrap/dist/actions/continue.d.ts": [
+    "core/public-api.d.ts"
+  ],
+  "plugin-bootstrap/dist/actions/followRoom.d.ts": [
+    "core/public-api.d.ts"
+  ],
+  "plugin-bootstrap/dist/actions/ignore.d.ts": [
+    "core/public-api.d.ts"
+  ],
+  "plugin-bootstrap/dist/actions/index.d.ts": [
+    "plugin-bootstrap/dist/actions/continue.d.ts",
+    "plugin-bootstrap/dist/actions/followRoom.d.ts",
+    "plugin-bootstrap/dist/actions/ignore.d.ts",
+    "plugin-bootstrap/dist/actions/muteRoom.d.ts",
+    "plugin-bootstrap/dist/actions/none.d.ts",
+    "plugin-bootstrap/dist/actions/unfollowRoom.d.ts",
+    "plugin-bootstrap/dist/actions/unmuteRoom.d.ts"
+  ],
+  "plugin-bootstrap/dist/actions/muteRoom.d.ts": [
+    "core/public-api.d.ts"
+  ],
+  "plugin-bootstrap/dist/actions/none.d.ts": [
+    "core/public-api.d.ts"
+  ],
+  "plugin-bootstrap/dist/actions/unfollowRoom.d.ts": [
+    "core/public-api.d.ts"
+  ],
+  "plugin-bootstrap/dist/actions/unmuteRoom.d.ts": [
+    "core/public-api.d.ts"
+  ],
+  "plugin-bootstrap/dist/evaluators/fact.d.ts": [
+    "core/public-api.d.ts"
+  ],
+  "plugin-bootstrap/dist/evaluators/goal.d.ts": [
+    "core/public-api.d.ts"
+  ],
+  "plugin-bootstrap/dist/evaluators/index.d.ts": [
+    "plugin-bootstrap/dist/evaluators/fact.d.ts",
+    "plugin-bootstrap/dist/evaluators/goal.d.ts"
+  ],
+  "plugin-bootstrap/dist/index.d.ts": [
+    "core/index.d.ts"
+  ],
+  "plugin-bootstrap/dist/providers/boredom.d.ts": [
+    "core/public-api.d.ts"
+  ],
+  "plugin-bootstrap/dist/providers/facts.d.ts": [
+    "core/public-api.d.ts"
+  ],
+  "plugin-bootstrap/dist/providers/index.d.ts": [
+    "plugin-bootstrap/dist/providers/boredom.d.ts",
+    "plugin-bootstrap/dist/providers/facts.d.ts",
+    "plugin-bootstrap/dist/providers/time.d.ts"
+  ],
+  "plugin-bootstrap/dist/providers/time.d.ts": [
+    "core/public-api.d.ts"
+  ],
+  "plugin-bootstrap/dist/public-api.d.ts": [
+    "plugin-bootstrap/dist/index.d.ts"
+  ],
+  "plugin-bootstrap/index.d.ts": [
+    "plugin-bootstrap/src/index.ts"
+  ],
+  "plugin-bootstrap/src/actions/continue.ts": [
+    "core/public-api.d.ts"
+  ],
+  "plugin-bootstrap/src/actions/followRoom.ts": [
+    "core/public-api.d.ts"
+  ],
+  "plugin-bootstrap/src/actions/ignore.ts": [
+    "core/public-api.d.ts"
+  ],
+  "plugin-bootstrap/src/actions/index.ts": [
+    "plugin-bootstrap/src/actions/continue.ts",
+    "plugin-bootstrap/src/actions/followRoom.ts",
+    "plugin-bootstrap/src/actions/ignore.ts",
+    "plugin-bootstrap/src/actions/muteRoom.ts",
+    "plugin-bootstrap/src/actions/none.ts",
+    "plugin-bootstrap/src/actions/unfollowRoom.ts",
+    "plugin-bootstrap/src/actions/unmuteRoom.ts"
+  ],
+  "plugin-bootstrap/src/actions/muteRoom.ts": [
+    "core/public-api.d.ts"
+  ],
+  "plugin-bootstrap/src/actions/none.ts": [
+    "core/public-api.d.ts"
+  ],
+  "plugin-bootstrap/src/actions/unfollowRoom.ts": [
+    "core/public-api.d.ts"
+  ],
+  "plugin-bootstrap/src/actions/unmuteRoom.ts": [
+    "core/public-api.d.ts"
+  ],
+  "plugin-bootstrap/src/evaluators/fact.ts": [
+    "core/public-api.d.ts"
+  ],
+  "plugin-bootstrap/src/evaluators/goal.ts": [
+    "core/public-api.d.ts"
+  ],
+  "plugin-bootstrap/src/evaluators/index.ts": [
+    "plugin-bootstrap/src/evaluators/fact.ts",
+    "plugin-bootstrap/src/evaluators/goal.ts"
+  ],
+  "plugin-bootstrap/src/index.ts": [
+    "core/index.d.ts",
+    "plugin-bootstrap/src/actions/continue.ts",
+    "plugin-bootstrap/src/actions/followRoom.ts",
+    "plugin-bootstrap/src/actions/ignore.ts",
+    "plugin-bootstrap/src/actions/muteRoom.ts",
+    "plugin-bootstrap/src/actions/none.ts",
+    "plugin-bootstrap/src/actions/unfollowRoom.ts",
+    "plugin-bootstrap/src/actions/unmuteRoom.ts",
+    "plugin-bootstrap/src/evaluators/fact.ts",
+    "plugin-bootstrap/src/evaluators/goal.ts",
+    "plugin-bootstrap/src/providers/boredom.ts",
+    "plugin-bootstrap/src/providers/facts.ts",
+    "plugin-bootstrap/src/providers/time.ts"
+  ],
+  "plugin-bootstrap/src/providers/boredom.ts": [
+    "core/public-api.d.ts"
+  ],
+  "plugin-bootstrap/src/providers/facts.ts": [
+    "core/public-api.d.ts",
+    "plugin-bootstrap/src/evaluators/fact.ts"
+  ],
+  "plugin-bootstrap/src/providers/index.ts": [
+    "plugin-bootstrap/src/providers/boredom.ts",
+    "plugin-bootstrap/src/providers/facts.ts",
+    "plugin-bootstrap/src/providers/time.ts"
+  ],
+  "plugin-bootstrap/src/providers/time.ts": [
+    "core/public-api.d.ts"
+  ],
+  "plugin-bootstrap/src/public-api.ts": [
+    "plugin-bootstrap/src/index.ts"
+  ],
+  "plugin-bootstrap/tsup.config.ts": [],
+  "plugin-bootstrap/vitest.config.ts": [],
+  "telegram-multiagent/examples/basic-usage.ts": [],
+  "telegram-multiagent/index.d.ts": [
+    "telegram-multiagent/src/index.ts"
+  ],
+  "telegram-multiagent/scripts/load-with-plugin.ts": [
+    "core/index.d.ts",
+    "telegram-multiagent/src/index.ts"
+  ],
+  "telegram-multiagent/src/ConversationFlow.ts": [
+    "telegram-multiagent/src/PersonalityEnhancer.ts",
+    "telegram-multiagent/src/TypingSimulator.ts",
+    "telegram-multiagent/src/types.ts"
+  ],
+  "telegram-multiagent/src/ConversationKickstarter.ts": [
+    "telegram-multiagent/src/ConversationManager.ts",
+    "telegram-multiagent/src/PluginComponent.ts",
+    "telegram-multiagent/src/TelegramRelay.ts",
+    "telegram-multiagent/src/types.ts"
+  ],
+  "telegram-multiagent/src/ConversationManager.ts": [
+    "telegram-multiagent/src/FallbackMemoryManager.ts",
+    "telegram-multiagent/src/PluginComponent.ts",
+    "telegram-multiagent/src/TelegramMultiAgentPlugin.ts",
+    "telegram-multiagent/src/types.ts",
+    "telegram-multiagent/src/utils.ts"
+  ],
+  "telegram-multiagent/src/FallbackMemoryManager.ts": [
+    "telegram-multiagent/src/types.ts"
+  ],
+  "telegram-multiagent/src/PersonalityEnhancer.ts": [
+    "telegram-multiagent/src/PluginComponent.ts",
+    "telegram-multiagent/src/types.ts"
+  ],
+  "telegram-multiagent/src/PluginComponent.ts": [
+    "telegram-multiagent/src/types.ts"
+  ],
+  "telegram-multiagent/src/SqliteAdapterProxy.ts": [
+    "telegram-multiagent/src/types.ts"
+  ],
+  "telegram-multiagent/src/TelegramCoordinationAdapter.ts": [
+    "telegram-multiagent/src/PersonalityEnhancer.ts",
+    "telegram-multiagent/src/SqliteAdapterProxy.ts",
+    "telegram-multiagent/src/schema.ts",
+    "telegram-multiagent/src/types.ts"
+  ],
+  "telegram-multiagent/src/TelegramMultiAgentPlugin.ts": [
+    "telegram-multiagent/src/ConversationKickstarter.ts",
+    "telegram-multiagent/src/ConversationManager.ts",
+    "telegram-multiagent/src/FallbackMemoryManager.ts",
+    "telegram-multiagent/src/PersonalityEnhancer.ts",
+    "telegram-multiagent/src/PluginComponent.ts",
+    "telegram-multiagent/src/SqliteAdapterProxy.ts",
+    "telegram-multiagent/src/TelegramRelay.ts",
+    "telegram-multiagent/src/config.ts",
+    "telegram-multiagent/src/types.ts",
+    "telegram-multiagent/src/utils.ts"
+  ],
+  "telegram-multiagent/src/TelegramRelay.ts": [
+    "telegram-multiagent/src/types.ts"
+  ],
+  "telegram-multiagent/src/TypingSimulator.ts": [
+    "telegram-multiagent/src/types.ts"
+  ],
+  "telegram-multiagent/src/__tests__/ConversationKickstarter.test.ts": [
+    "telegram-multiagent/src/ConversationKickstarter.ts",
+    "telegram-multiagent/src/ConversationManager.ts",
+    "telegram-multiagent/src/PersonalityEnhancer.ts",
+    "telegram-multiagent/src/TelegramCoordinationAdapter.ts",
+    "telegram-multiagent/src/TelegramRelay.ts",
+    "telegram-multiagent/src/types.ts"
+  ],
+  "telegram-multiagent/src/agentIdVerifier.ts": [
+    "telegram-multiagent/src/types.ts"
+  ],
+  "telegram-multiagent/src/config.ts": [],
+  "telegram-multiagent/src/index.ts": [
+    "clients/telegram/index.d.ts",
+    "telegram-multiagent/src/TelegramMultiAgentPlugin.ts",
+    "telegram-multiagent/src/types.ts"
+  ],
+  "telegram-multiagent/src/public-api.ts": [
+    "telegram-multiagent/src/ConversationFlow.ts",
+    "telegram-multiagent/src/ConversationKickstarter.ts",
+    "telegram-multiagent/src/ConversationManager.ts",
+    "telegram-multiagent/src/FallbackMemoryManager.ts",
+    "telegram-multiagent/src/PersonalityEnhancer.ts",
+    "telegram-multiagent/src/PluginComponent.ts",
+    "telegram-multiagent/src/SqliteAdapterProxy.ts",
+    "telegram-multiagent/src/TelegramCoordinationAdapter.ts",
+    "telegram-multiagent/src/TelegramMultiAgentPlugin.ts",
+    "telegram-multiagent/src/TelegramRelay.ts",
+    "telegram-multiagent/src/TypingSimulator.ts",
+    "telegram-multiagent/src/schema.ts",
+    "telegram-multiagent/src/types.ts",
+    "telegram-multiagent/src/utils.ts"
+  ],
+  "telegram-multiagent/src/schema.ts": [],
+  "telegram-multiagent/src/types.ts": [],
+  "telegram-multiagent/src/utils.ts": [],
+  "telegram-multiagent/tsup.config.ts": [],
+  "telegram-multiagent/types/ai.d.ts": []
+}

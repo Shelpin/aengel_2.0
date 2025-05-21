@@ -1,0 +1,92 @@
+# Unresolved Imports Log
+
+## cli
+
+No tsconfig.build.json found.
+
+## @elizaos/core
+
+No unresolved imports found.
+
+## @elizaos/adapter-sqlite
+
+No unresolved imports found.
+
+## @elizaos/telegram-client
+
+No unresolved imports found.
+
+## @elizaos-plugins/clients
+
+No tsconfig.build.json found.
+
+## @elizaos/telegram-multiagent
+
+No unresolved imports found.
+
+## @elizaos/dynamic-imports
+
+No unresolved imports found.
+
+## @elizaos/plugin-bootstrap
+
+```
+src/actions/continue.ts(1,45): error TS2307: Cannot find module '@elizaos/core/public-api' or its corresponding type declarations.
+src/actions/continue.ts(2,62): error TS2307: Cannot find module '@elizaos/core/public-api' or its corresponding type declarations.
+src/actions/continue.ts(3,56): error TS2307: Cannot find module '@elizaos/core/public-api' or its corresponding type declarations.
+src/actions/continue.ts(13,8): error TS2307: Cannot find module '@elizaos/core/public-api' or its corresponding type declarations.
+src/actions/followRoom.ts(1,32): error TS2307: Cannot find module '@elizaos/core/public-api' or its corresponding type declarations.
+src/actions/followRoom.ts(2,37): error TS2307: Cannot find module '@elizaos/core/public-api' or its corresponding type declarations.
+src/actions/followRoom.ts(3,31): error TS2307: Cannot find module '@elizaos/core/public-api' or its corresponding type declarations.
+src/actions/followRoom.ts(11,8): error TS2307: Cannot find module '@elizaos/core/public-api' or its corresponding type declarations.
+src/actions/ignore.ts(6,8): error TS2307: Cannot find module '@elizaos/core/public-api' or its corresponding type declarations.
+src/actions/muteRoom.ts(1,32): error TS2307: Cannot find module '@elizaos/core/public-api' or its corresponding type declarations.
+src/actions/muteRoom.ts(2,37): error TS2307: Cannot find module '@elizaos/core/public-api' or its corresponding type declarations.
+src/actions/muteRoom.ts(3,31): error TS2307: Cannot find module '@elizaos/core/public-api' or its corresponding type declarations.
+src/actions/muteRoom.ts(11,8): error TS2307: Cannot find module '@elizaos/core/public-api' or its corresponding type declarations.
+src/actions/none.ts(6,8): error TS2307: Cannot find module '@elizaos/core/public-api' or its corresponding type declarations.
+src/actions/unfollowRoom.ts(1,32): error TS2307: Cannot find module '@elizaos/core/public-api' or its corresponding type declarations.
+src/actions/unfollowRoom.ts(2,37): error TS2307: Cannot find module '@elizaos/core/public-api' or its corresponding type declarations.
+src/actions/unfollowRoom.ts(3,31): error TS2307: Cannot find module '@elizaos/core/public-api' or its corresponding type declarations.
+src/actions/unfollowRoom.ts(11,8): error TS2307: Cannot find module '@elizaos/core/public-api' or its corresponding type declarations.
+src/actions/unmuteRoom.ts(1,32): error TS2307: Cannot find module '@elizaos/core/public-api' or its corresponding type declarations.
+src/actions/unmuteRoom.ts(2,37): error TS2307: Cannot find module '@elizaos/core/public-api' or its corresponding type declarations.
+src/actions/unmuteRoom.ts(3,31): error TS2307: Cannot find module '@elizaos/core/public-api' or its corresponding type declarations.
+src/actions/unmuteRoom.ts(11,8): error TS2307: Cannot find module '@elizaos/core/public-api' or its corresponding type declarations.
+src/evaluators/fact.ts(1,32): error TS2307: Cannot find module '@elizaos/core/public-api' or its corresponding type declarations.
+src/evaluators/fact.ts(2,37): error TS2307: Cannot find module '@elizaos/core/public-api' or its corresponding type declarations.
+src/evaluators/fact.ts(3,31): error TS2307: Cannot find module '@elizaos/core/public-api' or its corresponding type declarations.
+src/evaluators/fact.ts(12,8): error TS2307: Cannot find module '@elizaos/core/public-api' or its corresponding type declarations.
+src/evaluators/goal.ts(1,32): error TS2307: Cannot find module '@elizaos/core/public-api' or its corresponding type declarations.
+src/evaluators/goal.ts(2,30): error TS2307: Cannot find module '@elizaos/core/public-api' or its corresponding type declarations.
+src/evaluators/goal.ts(3,26): error TS2307: Cannot find module '@elizaos/core/public-api' or its corresponding type declarations.
+src/evaluators/goal.ts(4,40): error TS2307: Cannot find module '@elizaos/core/public-api' or its corresponding type declarations.
+src/evaluators/goal.ts(13,8): error TS2307: Cannot find module '@elizaos/core/public-api' or its corresponding type declarations.
+src/index.ts(1,29): error TS2307: Cannot find module '@elizaos/core' or its corresponding type declarations.
+src/providers/boredom.ts(1,61): error TS2307: Cannot find module '@elizaos/core/public-api' or its corresponding type declarations.
+src/providers/facts.ts(6,8): error TS2307: Cannot find module '@elizaos/core/public-api' or its corresponding type declarations.
+src/providers/facts.ts(7,46): error TS2307: Cannot find module '@elizaos/core/public-api' or its corresponding type declarations.
+src/providers/time.ts(1,61): error TS2307: Cannot find module '@elizaos/core/public-api' or its corresponding type declarations.
+
+```
+
+## @elizaos/client-direct
+
+```
+src/api.ts(18,8): error TS2307: Cannot find module '@elizaos/core/public-api' or its corresponding type declarations.
+src/index.ts(24,8): error TS2307: Cannot find module '@elizaos/core' or its corresponding type declarations.
+src/verifiable-log-api.ts(11,8): error TS2307: Cannot find module '@elizaos/core/public-api' or its corresponding type declarations.
+
+```
+
+## @elizaos/agent
+
+```
+src/__tests__/client-type-identification.test.ts(1,44): error TS2307: Cannot find module '@elizaos/core/public-api' or its corresponding type declarations.
+src/defaultCharacter.ts(1,51): error TS2307: Cannot find module '@elizaos/core/public-api' or its corresponding type declarations.
+src/index.ts(1,30): error TS2307: Cannot find module '@elizaos/client-direct' or its corresponding type declarations.
+src/index.ts(22,8): error TS2307: Cannot find module '@elizaos/core/public-api' or its corresponding type declarations.
+src/index.ts(718,50): error TS2307: Cannot find module '@elizaos/adapter-sqlite' or its corresponding type declarations.
+
+```
+

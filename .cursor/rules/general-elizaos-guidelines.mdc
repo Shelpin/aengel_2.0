@@ -1,0 +1,449 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# ElizaOS General Development Guidelines Rule
+
+## Overview
+
+This rule establishes comprehensive guidelines and best practices for both ElizaOS core components and custom plugins. Following these guidelines ensures a cohesive developer experience, maintains high code quality, and promotes interoperability across the ElizaOS ecosystem.
+
+## Core Development Principles
+
+### 1. Dependency Management
+
+- **Minimize Dependencies**: Only include necessary dependencies to reduce package footprint and potential conflicts.
+
+```typescript
+// RECOMMENDED: Import only what you need
+import { Logger } from '@elizaos/core';
+
+// AVOID: Importing entire modules when only specific parts are needed
+import * as Core from '@elizaos/core';
+```
+
+- **Version Pinning**: Pin dependency versions in package.json to ensure reproducible builds.
+
+```json
+{
+  "dependencies": {
+    "@elizaos/core": "0.5.2",
+    "better-sqlite3": "8.6.0"
+  }
+}
+```
+
+- **Package Manager**: Use pnpm exclusively as the package manager to maintain consistency with workspaces.
+
+```bash
+# CORRECT: Using pnpm
+pnpm add @elizaos/core
+
+# AVOID: Using npm or yarn
+npm install @elizaos/core  # Not recommended
+yarn add @elizaos/core     # Not recommended
+```
+
+- **Node.js Compatibility**: Ensure compatibility with Node.js v23.3, especially for native modules.
+
+```json
+{
+  "engines": {
+    "node": "^23.3.0"
+  }
+}
+```
+
+### 2. Code Quality
+
+- **TypeScript Usage**: Write all new code in TypeScript to improve developer experience and catch errors early.
+
+```typescript
+// RECOMMENDED: Using proper TypeScript types
+function processMessage(message: { id: string; content: string }): boolean {
+  return message.content.length > 0;
+}
+
+// AVOID: Using any or ignoring types
+function processMessage(message: any): any {
+  return message.content.length > 0;
+}
+```
+
+- **Code Formatting**: Follow project coding style with proper linting and formatting using the provided configuration.
+
+```bash
+# Verify code formatting
+pnpm run lint
+
+# Fix formatting issues automatically
+pnpm run lint:fix
+```
+
+- **API Documentation**: Include comprehensive JSDoc comments for all public APIs.
+
+```typescript
+/**
+ * Registers a new agent with the system
+ * 
+ * @param agentConfig - Configuration for the agent
+ * @param agentConfig.name - Unique name identifier for the agent
+ * @param agentConfig.capabilities - List of capabilities the agent provides
+ * @returns The unique ID assigned to the registered agent
+ * @throws {DuplicateAgentError} If an agent with the same name already exists
+ */
+function registerAgent(agentConfig: AgentConfig): string {
+  // Implementation
+}
+```
+
+- **Testing**: Maintain test coverage of at least 70% for critical paths, including both unit and integration tests.
+
+```typescript
+// Example test for a utility function
+describe('formatAgentName', () => {
+  it('should format agent names correctly', () => {
+    expect(formatAgentName('test_agent')).toBe('test-agent');
+  });
+
+  it('should handle special characters', () => {
+    expect(formatAgentName('test@agent')).toBe('test-agent');
+  });
+});
+```
+
+### 3. Error Handling
+
+- **Consistent Error Patterns**: Use standard error handling patterns across all components.
+
+```typescript
+// RECOMMENDED: Create specific error classes
+export class DatabaseConnectionError extends Error {
+  constructor(message: string, public readonly cause?: Error) {
+    super(`Database connection failed: ${message}`);
+    this.name = 'DatabaseConnectionError';
+  }
+}
+
+// RECOMMENDED: Proper error handling
+try {
+  await connectToDatabase();
+} catch (error) {
+  if (error instanceof DatabaseConnectionError) {
+    logger.error('Failed to connect to database', { error });
+    // Handle specifically
+  } else {
+    logger.error('Unexpected error', { error });
+    // Handle generically
+  }
+}
+```
+
+- **Graceful Degradation**: Components should fail gracefully when dependencies are unavailable.
+
+```typescript
+// RECOMMENDED: Check for resource availability and degrade gracefully
+async function getAgentData(agentId: string): Promise<AgentData | null> {
+  try {
+    return await database.getAgent(agentId);
+  } catch (error) {
+    logger.warn(`Failed to retrieve agent data, using cached data instead`, { agentId, error });
+    return cachedAgentData.get(agentId) || null;
+  }
+}
+```
+
+- **Informative Errors**: Error messages should be clear, actionable, and include context.
+
+```typescript
+// RECOMMENDED: Detailed error with context
+throw new Error(`Failed to load agent configuration from ${configPath}. Ensure the file exists and contains valid JSON.`);
+
+// AVOID: Vague errors
+throw new Error('Failed to load config');
+```
+
+### 4. Configuration
+
+- **Document Environment Variables**: Document all required environment variables with descriptions and examples.
+
+```typescript
+/**
+ * Required environment variables:
+ * - AGENT_PORT: Port number for the agent to listen on (e.g., 3000)
+ * - RELAY_SERVER_URL: URL of the relay server (e.g., http://localhost:4000)
+ * - TELEGRAM_BOT_TOKEN: Token for the Telegram bot API
+ */
+```
+
+- **Configuration Validation**: Validate configuration at startup and fail fast if invalid.
+
+```typescript
+function validateConfig(config: AgentConfig): void {
+  if (!config.name) {
+    throw new ConfigurationError('Agent name is required');
+  }
+  
+  if (!config.ports || !config.ports.http) {
+    throw new ConfigurationError('HTTP port configuration is required');
+  }
+  
+  if (typeof config.ports.http !== 'number' || config.ports.http < 1024 || config.ports.http > 65535) {
+    throw new ConfigurationError(`Invalid HTTP port: ${config.ports.http}`);
+  }
+}
+```
+
+- **Configuration Hierarchy**: Follow the standard configuration loading order.
+
+```typescript
+// 1. Default configuration
+const defaultConfig = {
+  port: 3000,
+  logLevel: 'info'
+};
+
+// 2. Load from configuration file (if exists)
+let fileConfig = {};
+try {
+  fileConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+} catch (error) {
+  logger.warn(`Could not load config file from ${configPath}`, { error });
+}
+
+// 3. Environment variables (highest priority)
+const envConfig = {
+  port: process.env.AGENT_PORT ? parseInt(process.env.AGENT_PORT, 10) : undefined,
+  logLevel: process.env.LOG_LEVEL
+};
+
+// 4. Merge configurations with the correct priority
+const config = {
+  ...defaultConfig,
+  ...fileConfig,
+  ...pickBy(envConfig, (value) => value !== undefined)
+};
+```
+
+### 5. Interoperability
+
+- **Standard Interfaces**: Implement common interfaces defined in core.
+
+```typescript
+// RECOMMENDED: Implementing standard interfaces
+import { AgentPlugin } from '@elizaos/core';
+
+export class MyCustomAgent implements AgentPlugin {
+  name = 'my-custom-agent';
+  
+  async initialize(context: PluginContext): Promise<void> {
+    // Implementation
+  }
+  
+  async shutdown(): Promise<void> {
+    // Implementation
+  }
+}
+```
+
+- **Namespace Consistency**: Use appropriate namespaces for packages.
+
+```json
+// For core packages:
+{
+  "name": "@elizaos/core"
+}
+
+// For plugins:
+{
+  "name": "@elizaos-plugins/my-custom-plugin"
+}
+```
+
+- **Module Type Compatibility**: Support both ESM and CommonJS where possible.
+
+```json
+// package.json
+{
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  }
+}
+```
+
+- **API Versioning**: Maintain backward compatibility or provide clear migration paths.
+
+```typescript
+// Deprecating an API function
+/**
+ * @deprecated Use `registerAgent` instead. Will be removed in version 0.7.0.
+ */
+export function addAgent(config: AgentConfig): string {
+  return registerAgent(config);
+}
+```
+
+## Plugin-Specific Guidelines
+
+### 1. Registration and Discovery
+
+- Add `elizaos-plugins` as a GitHub topic along with relevant functionality tags
+- Export a standard plugin registration interface:
+
+```typescript
+// plugin.ts
+import { PluginRegistration } from '@elizaos/core';
+
+export default {
+  name: 'my-telegram-plugin',
+  version: '0.1.0',
+  capabilities: ['telegram-integration'],
+  initialize: async (context) => {
+    // Plugin initialization code
+  },
+  shutdown: async () => {
+    // Cleanup resources
+  }
+} as PluginRegistration;
+```
+
+### 2. Resource Management
+
+- Clean up all resources when the plugin is deactivated:
+
+```typescript
+export default {
+  // ...
+  shutdown: async () => {
+    await bot.stop();
+    await database.close();
+    server.close();
+    clearInterval(pollingInterval);
+    // Release all event listeners
+    eventEmitter.removeAllListeners();
+  }
+} as PluginRegistration;
+```
+
+- Use proper namespacing for database tables and entities:
+
+```typescript
+// RECOMMENDED: Prefixing database tables with plugin name
+const TABLE_NAME = 'telegram_plugin_messages';
+
+// RECOMMENDED: Using a plugin-specific database file
+const db = new Database(`${dataDir}/telegram_plugin.sqlite`);
+```
+
+### 3. Documentation Requirements
+
+- README.md must include:
+  - Installation instructions
+  - Configuration options
+  - Required environment variables
+  - Usage examples
+  - Troubleshooting section
+
+- Document all APIs using JSDoc with examples
+
+### 4. Security Best Practices
+
+- Validate all inputs from external sources:
+
+```typescript
+// RECOMMENDED: Input validation
+function processUserInput(input: unknown): string {
+  if (typeof input !== 'string') {
+    throw new TypeError('Input must be a string');
+  }
+  
+  // Sanitize input to prevent injection attacks
+  return sanitizeString(input);
+}
+```
+
+- Follow the principle of least privilege for permissions
+- Never hardcode sensitive information (tokens, passwords)
+- Document security implications for operators
+
+## Core-Specific Guidelines
+
+### 1. API Design
+
+- Follow consistent naming conventions for public APIs
+- Design for extensibility through interfaces and dependency injection:
+
+```typescript
+// RECOMMENDED: Dependency injection
+export class AgentManager {
+  constructor(
+    private database: Database,
+    private logger: Logger,
+    private eventBus: EventBus
+  ) {}
+  
+  // Methods using injected dependencies
+}
+```
+
+- Maintain backward compatibility for public APIs
+- Document breaking changes and provide migration guides
+
+### 2. Build System
+
+- Ensure builds work across supported platforms
+- Support incremental builds to improve developer experience
+- Include runtime verification steps in the build process:
+
+```typescript
+// Example post-build verification script
+import { resolve } from 'path';
+
+// Verify that modules can be imported at runtime
+const modules = [
+  '@elizaos/core',
+  '@elizaos/adapter-sqlite',
+  '@elizaos-plugins/telegram'
+];
+
+async function verifyModules() {
+  for (const module of modules) {
+    try {
+      await import(module);
+      console.log(`✅ Successfully imported ${module}`);
+    } catch (error) {
+      console.error(`❌ Failed to import ${module}:`, error);
+      process.exit(1);
+    }
+  }
+}
+
+verifyModules();
+```
+
+### 3. Documentation Standards
+
+- Maintain up-to-date API documentation
+- Document architectural decisions and rationales
+- Include examples for common use cases
+- Keep documentation in sync with code changes
+
+## Implementation Verification
+
+Developers should verify their implementation against this rule by ensuring:
+
+1. Package configuration follows the established patterns
+2. Code passes linting and type checking
+3. Tests cover critical functionality
+4. Documentation is comprehensive and up-to-date
+5. The component handles errors gracefully
+6. Resources are properly managed throughout the lifecycle
+
+## Rule Updates and Amendments
+
+This rule may be amended based on lessons learned from implementation. AI agents may propose modifications to this rule based on observed patterns and best practices in the codebase. 

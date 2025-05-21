@@ -1,0 +1,48 @@
+{
+  "compilerOptions": {
+    "target": "ES2021",
+    "module": "nodenext",
+    "lib": [
+      "es2021",
+      "dom"
+    ],
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "declaration": true,
+    "baseUrl": ".",
+    "moduleResolution": "nodenext",
+    "skipLibCheck": true,
+    "composite": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": false,
+    "types": [
+      "node",
+      "jest"
+    ],
+    "noEmitOnError": false,
+    "isolatedModules": false,
+    "noImplicitAny": true
+  },
+  "ts-node": {
+    "experimentalSpecifierResolution": "node",
+    "transpileOnly": true,
+    "esm": true
+  },
+  "include": [
+    "src"
+  ],
+  "references": [
+    {
+      "path": "../core"
+    },
+    {
+      "path": "../plugin-bootstrap"
+    },
+    {
+      "path": "../adapter-sqlite"
+    }
+  ]
+}

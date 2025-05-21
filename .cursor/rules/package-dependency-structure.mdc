@@ -1,0 +1,219 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Package Dependency Structure Rule
+
+## Purpose
+This rule establishes the canonical dependency structure and build order for ElizaOS packages to ensure predictable builds and prevent dependency cycles. It defines the required relationships between packages and their expected exports.
+
+## Requirements
+
+### 1. Package Dependency Graph
+
+The following dependency graph must be maintained for ElizaOS packages:
+
+```
+@elizaos/core → No dependencies
+↑
+@elizaos/adapter-sqlite → Depends on @elizaos/core
+↑
+@elizaos/plugin-bootstrap → Depends on @elizaos/core
+↑
+@elizaos/clients/telegram → No external dependencies
+↑
+@elizaos/dynamic-imports → No external dependencies
+↑
+@elizaos/telegram-multiagent → Depends on @elizaos/core
+```
+
+### 2. Package Responsibilities and Exports
+
+Each package has specific responsibilities and exports:
+
+1. **@elizaos/core**
+   - Exports: public-api, types, database, models, memory, utils, etc.
+   - Dependencies: types, database, utils, logger (internal)
+   - Must not have external dependencies to other ElizaOS packages
+
+2. **@elizaos/adapter-sqlite**
+   - Exports: SqliteDatabaseAdapter
+   - Dependencies: @elizaos/core, sqlite3, database
+   - Must implement the DatabaseAdapter interface from core
+
+3. **@elizaos/clients/telegram**
+   - Exports: Telegram client integration
+   - Dependencies: telegram-bot-api, plugin-bootstrap
+   - Must not create circular dependencies with agents
+
+4. **@elizaos/plugin-bootstrap**
+   - Exports: Plugin initialization and registration
+   - Dependencies: @elizaos/core, evaluators, agents, actions
+   - Must maintain plugin registration contracts
+
+5. **@elizaos/telegram-multiagent**
+   - Exports: Multi-agent coordination for Telegram
+   - Dependencies: plugin-bootstrap, telegram client, runtime
+   - Must resolve circular dependencies using interfaces
+
+6. **@elizaos/dynamic-imports**
+   - Exports: Registry for runtime plugins
+   - Dependencies: @elizaos/core
+   - Must support lazy loading of modules
+
+### 3. Build Steps Sequence
+
+The following build steps must be executed in order for each package:
+
+1. `prebuild`: Clean previous build artifacts and prepare build environment
+2. `build`: Compile TypeScript and generate declaration files
+
+### 4. Package Status Tracking
+
+Package build status must be tracked with the following states:
+- `clean`: Package is built and up-to-date
+- `unbuilt`: Package requires building
+- `error`: Package has build errors that need resolution
+
+## Implementation Details
+
+### 1. Dependency Verification
+
+Before each build, verify the dependency structure using:
+
+```bash
+# Check for circular dependencies
+npx madge --circular --extensions ts packages/
+
+# Visualize dependency graph
+npx madge --image graph.png --extensions ts packages/
+```
+
+### 2. Canonical Build Order
+
+Packages must be built in the following order:
+
+1. `@elizaos/core`
+2. `@elizaos/adapter-sqlite`
+3. `@elizaos/plugin-bootstrap`
+4. `@elizaos/clients/telegram`
+5. `@elizaos/dynamic-imports`
+6. `@elizaos/telegram-multiagent`
+
+Example build script:
+
+```javascript
+// from build.js
+const buildOrder = [
+  '@elizaos/core',
+  '@elizaos/adapter-sqlite',
+  '@elizaos/plugin-bootstrap',
+  '@elizaos/clients/telegram',
+  '@elizaos/dynamic-imports',
+  '@elizaos/telegram-multiagent'
+];
+
+for (const pkg of buildOrder) {
+  console.log(`Building ${pkg}...`);
+  try {
+    execSync(`cd packages/${pkg.replace('@elizaos/', '')} && pnpm run build`, { stdio: 'inherit' });
+    console.log(`Successfully built ${pkg}`);
+  } catch (error) {
+    console.error(`Error building ${pkg}`);
+    process.exit(1);
+  }
+}
+```
+
+### 3. Adding New Packages
+
+When adding new packages to the system:
+
+1. Update the dependency graph and build order
+2. Document new package responsibilities and exports
+3. Validate that no circular dependencies are introduced
+4. Ensure proper interface implementations
+
+### 4. Package Interface Contracts
+
+Each package must maintain its interface contracts:
+
+**Core Database Interface:**
+```typescript
+// In @elizaos/core
+export interface DatabaseAdapter {
+  connect(): Promise<void>;
+  disconnect(): Promise<void>;
+  query(sql: string, params?: any[]): Promise<any[]>;
+  // Additional methods as needed
+}
+```
+
+**Adapter Implementation:**
+```typescript
+// In @elizaos/adapter-sqlite
+import { DatabaseAdapter } from '@elizaos/core';
+
+export class SqliteDatabaseAdapter implements DatabaseAdapter {
+  // Implementation of the interface
+}
+```
+
+## Verification Process
+
+### 1. Dependency Structure Test
+
+Run the following command to verify the dependency structure:
+
+```bash
+node scripts/verify-deps.js
+```
+
+Example verification script:
+```javascript
+// scripts/verify-deps.js
+const expectedDeps = {
+  '@elizaos/core': [],
+  '@elizaos/adapter-sqlite': ['@elizaos/core'],
+  '@elizaos/plugin-bootstrap': ['@elizaos/core'],
+  '@elizaos/clients/telegram': [],
+  '@elizaos/dynamic-imports': [],
+  '@elizaos/telegram-multiagent': ['@elizaos/core']
+};
+
+// Verification logic...
+```
+
+### 2. Build Success Verification
+
+A successful build should result in:
+
+1. All packages built without errors
+2. Typescript declaration files (.d.ts) generated
+3. Import resolution working for all packages
+4. No circular dependencies detected
+
+### 3. Runtime Dependency Test
+
+```bash
+# Test runtime dependencies
+node -e "
+  const core = require('@elizaos/core');
+  const adapter = require('@elizaos/adapter-sqlite');
+  console.log('Successfully loaded packages');
+"
+```
+
+## Rule Exceptions
+
+Exceptions to this dependency structure must follow the Rule Flexibility and Amendment process defined in the Master Build Architecture Rule, including:
+
+1. Clear documentation of the exception
+2. Justification for the exception
+3. Proposed timeline for resolving the exception
+4. Approval from at least one other developer
+
+### Current Approved Exceptions
+
+None at this time. 

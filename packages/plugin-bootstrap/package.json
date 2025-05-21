@@ -1,0 +1,32 @@
+{
+  "name": "@elizaos/plugin-bootstrap",
+  "type": "module",
+  "main": "./dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "prebuild": "rimraf dist tsconfig.build.tsbuildinfo",
+    "build": "tsc -b tsconfig.build.json",
+    "build:types": "tsc --build tsconfig.build.json",
+    "clean": "rimraf dist",
+    "dev": "tsc -b tsconfig.build.json --watch",
+    "test": "jest",
+    "lint": "eslint src --ext .ts"
+  },
+  "dependencies": {
+    "@elizaos/core": "workspace:*",
+    "@elizaos/types": "workspace:*"
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "devDependencies": {
+    "tsup": "^8.3.5"
+  }
+}

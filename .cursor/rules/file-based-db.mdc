@@ -1,0 +1,313 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# File-Based Database Rule
+
+## Purpose
+This rule establishes standardized practices for implementing and interacting with file-based databases (SQLite) across the ElizaOS ecosystem to ensure data integrity, performance, and maintainability.
+
+## Requirements
+
+### 1. Database File Location
+
+- All SQLite database files must be stored in the designated data directory:
+  - Development: `./data`
+  - Production: `/var/lib/elizaos/data`
+  - Test: `./test/data`
+
+- Database files must follow the naming convention: `<service-name>-<purpose>.db` 
+  - Example: `telegram-agent-messages.db`, `core-config.db`
+
+- Temporary databases for testing must be created with the `.test.db` suffix and automatically cleaned up after tests complete.
+
+Example file structure: 
+```
+/var/lib/elizaos/data/
+├── core-config.db
+├── telegram-agent-messages.db
+├── task-manager.db
+└── metrics.db
+```
+
+### 2. Connection Management
+
+- Database connections must be established through the centralized adapter:
+  ```typescript
+  import { SQLiteAdapter } from '@elizaos/adapter-sqlite';
+  
+  const db = await SQLiteAdapter.connect('telegram-agent-messages');
+  ```
+
+- Connections must implement proper lifecycle management:
+  - Open connections during service startup
+  - Implement connection pooling for high-traffic services
+  - Close connections gracefully during shutdown
+  - Include timeout handling for long-running queries
+
+Example connection lifecycle:
+```typescript
+import { SQLiteAdapter } from '@elizaos/adapter-sqlite';
+import { createLogger } from '@elizaos/core/logger';
+
+const logger = createLogger('database');
+let db: SQLiteAdapter;
+
+async function initializeDatabase() {
+  try {
+    db = await SQLiteAdapter.connect('telegram-agent-messages', {
+      maxConnections: 5,
+      timeout: 30000,
+      readOnly: false
+    });
+    
+    logger.info('Database connection established');
+    
+    // Register shutdown handler
+    process.on('SIGTERM', closeDatabase);
+    process.on('SIGINT', closeDatabase);
+    
+  } catch (error) {
+    logger.error('Failed to connect to database', error);
+    throw error;
+  }
+}
+
+async function closeDatabase() {
+  if (db) {
+    try {
+      await db.close();
+      logger.info('Database connection closed');
+    } catch (error) {
+      logger.error('Error closing database connection', error);
+    }
+  }
+}
+```
+
+### 3. Schema Management 
+
+- Each service must maintain schema migration files in a `migrations` directory
+- Migration files must be versioned using sequential numeric prefixes: `001_initial_schema.sql`, `002_add_user_table.sql`
+- Migrations must be applied automatically during service startup
+- Migrations must be idempotent (safe to run multiple times)
+
+Example migration file (`migrations/001_initial_schema.sql`):
+```sql
+-- Migration: 001_initial_schema
+-- Description: Creates initial tables for telegram message storage
+
+-- Don't run if the table already exists
+CREATE TABLE IF NOT EXISTS messages (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  chat_id INTEGER NOT NULL,
+  message_id INTEGER NOT NULL,
+  sender_id INTEGER NOT NULL,
+  content TEXT NOT NULL,
+  timestamp INTEGER NOT NULL,
+  processed BOOLEAN DEFAULT FALSE,
+  
+  UNIQUE(chat_id, message_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_messages_chat_id ON messages(chat_id);
+CREATE INDEX IF NOT EXISTS idx_messages_processed ON messages(processed);
+```
+
+### 4. Query Construction
+
+- All SQL queries must use parameterized statements to prevent SQL injection
+- Complex queries must be documented with comments explaining their purpose
+- Queries must handle potential SQLite-specific edge cases (like UNIQUE constraint violations)
+
+Example safe query construction:
+```typescript
+import { SQLiteAdapter } from '@elizaos/adapter-sqlite';
+
+async function saveMessage(db: SQLiteAdapter, message: TelegramMessage) {
+  try {
+    // Use parameterized query to prevent SQL injection
+    const result = await db.run(
+      `INSERT INTO messages (chat_id, message_id, sender_id, content, timestamp, processed)
+       VALUES (?, ?, ?, ?, ?, ?)
+       ON CONFLICT(chat_id, message_id) DO UPDATE SET
+         content = excluded.content,
+         processed = excluded.processed`,
+      [
+        message.chatId,
+        message.messageId,
+        message.senderId,
+        message.content,
+        Math.floor(Date.now() / 1000), // UNIX timestamp
+        false
+      ]
+    );
+    
+    return result.lastID;
+  } catch (error) {
+    logger.error('Failed to save message', { error, messageId: message.messageId });
+    throw error;
+  }
+}
+```
+
+### 5. Error Handling
+
+- Database operations must implement proper error handling
+- Critical database errors must trigger service alerts
+- Applications must gracefully degrade when database operations fail
+- Retry mechanisms should be implemented for transient errors
+
+Example error handling implementation:
+```typescript
+import { DatabaseError, ConnectionError, retry } from '@elizaos/adapter-sqlite';
+
+// Retry mechanism for transient errors
+const getMessagesWithRetry = retry(
+  async function getMessages(chatId: number, limit: number) {
+    try {
+      return await db.all(
+        'SELECT * FROM messages WHERE chat_id = ? ORDER BY timestamp DESC LIMIT ?',
+        [chatId, limit]
+      );
+    } catch (error) {
+      if (error instanceof ConnectionError) {
+        // Transient error, can be retried
+        throw error;
+      } else if (error instanceof DatabaseError) {
+        // Log detailed database error
+        logger.error('Database error in getMessages', {
+          error: error.message,
+          code: error.code,
+          query: error.query
+        });
+        throw error;
+      } else {
+        // Unknown error
+        logger.error('Unknown error in getMessages', { error });
+        throw error;
+      }
+    }
+  },
+  { 
+    retries: 3, 
+    delay: 500, 
+    backoff: 2 
+  }
+);
+```
+
+### 6. Performance Considerations
+
+- Indexes must be created for frequently queried columns
+- Large result sets must be paginated
+- Long-running operations must be performed in transactions
+- Batch operations should be used for multiple inserts/updates
+
+Example transaction and batch operation:
+```typescript
+async function markMessagesAsProcessed(messageIds: number[]) {
+  if (messageIds.length === 0) return;
+  
+  // Use transaction for multiple updates
+  await db.transaction(async (trx) => {
+    // Use batch operation instead of multiple individual updates
+    const placeholders = messageIds.map(() => '?').join(',');
+    await trx.run(
+      `UPDATE messages SET processed = TRUE, processed_at = ? 
+       WHERE id IN (${placeholders})`,
+      [Math.floor(Date.now() / 1000), ...messageIds]
+    );
+    
+    // Log the batch operation
+    logger.info(`Marked ${messageIds.length} messages as processed`);
+  });
+}
+```
+
+### 7. Testing Requirements
+
+- Each database interaction must have corresponding unit tests
+- Integration tests must use in-memory or temporary databases
+- Test data must be cleaned up after test execution
+
+Example test setup:
+```typescript
+import { SQLiteAdapter } from '@elizaos/adapter-sqlite';
+import { saveMessage, getMessages } from './message-repository';
+
+describe('MessageRepository', () => {
+  let db: SQLiteAdapter;
+  
+  beforeEach(async () => {
+    // Use in-memory database for tests
+    db = await SQLiteAdapter.connect(':memory:');
+    
+    // Apply schema migrations
+    await db.migrate('./migrations');
+  });
+  
+  afterEach(async () => {
+    await db.close();
+  });
+  
+  test('should save and retrieve messages', async () => {
+    // Test data
+    const message = {
+      chatId: 123,
+      messageId: 456,
+      senderId: 789,
+      content: 'Test message',
+      processed: false
+    };
+    
+    // Test saving
+    await saveMessage(db, message);
+    
+    // Test retrieval
+    const messages = await getMessages(db, 123, 10);
+    
+    expect(messages).toHaveLength(1);
+    expect(messages[0].content).toBe('Test message');
+  });
+});
+```
+
+### 8. Documentation Requirements
+
+- Each service using SQLite must document:
+  - Database schema with table relationships
+  - Migration approach
+  - Expected database size and growth rate
+  - Backup and recovery procedures
+
+## Implementation Timeline
+
+- **Immediate**: Audit current SQLite implementations
+- **Short-term**: Standardize connection management
+- **Medium-term**: Implement schema migration system
+- **Long-term**: Add performance monitoring and optimization
+
+## Verification
+
+Database configuration compliance can be verified with:
+
+```bash
+# Check if database files are in the correct location
+find /var/lib/elizaos/data -name "*.db" | sort
+
+# Verify schema versions are consistent
+./scripts/db-schema-check.sh
+
+# Run database performance tests
+pnpm run test:db-performance
+```
+
+## Exceptions
+
+Exceptions to this rule must be:
+1. Documented with clear justification
+2. Approved by the database architecture team
+3. Include a migration plan to eventually conform to the standard 

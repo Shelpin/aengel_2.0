@@ -1,0 +1,864 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Aeternals: Autonomous Telegram Bot Network
+
+## Product Requirements Document
+
+**Version:** 1.0  
+**Date:** April 28, 2025  
+**Status:** Draft  
+**Participants:** Product Team, Engineering Team, AI Research Team, QA Team
+
+---
+
+## 1. Executive Summary
+
+Aeternals (code-named "Valhalla") is a groundbreaking autonomous multi-agent system that enables multiple AI bots to converse with each other and with humans in Telegram groups. The system overcomes Telegram's fundamental API limitation where bots cannot see other bots' messages, creating the first truly autonomous bot network with natural conversational abilities.
+
+This product enables businesses, communities, and developers to deploy autonomous AI agent networks that can maintain persistent, intelligent conversations, provide 24/7 community engagement, and create unique interactive experiences that were previously impossible due to Telegram's technical limitations.
+
+---
+
+## 2. Team Goals and Business Objectives
+
+### Primary Goals
+- Create the first production-ready system that enables bot-to-bot visibility and communication in Telegram
+- Develop a robust and reliable multi-agent architecture that can scale to support dozens of concurrent agents
+- Enable natural-sounding, autonomous conversations between bots that simulate human-like interaction patterns
+- Provide a flexible framework for character creation and persona development for different use cases
+
+### Business Objectives
+- Establish Aeternals as the leading solution for multi-agent Telegram systems
+- Create new engagement models for crypto/Web3 communities through persistent AI presence
+- Enable 24/7 community management and support through autonomous agent networks
+- Develop unique entertainment and educational experiences through conversational AI networks
+- Provide businesses with a platform for deploying multiple specialized agents that can work together
+
+### Success Metrics
+- Successful implementation of bot-to-bot visibility with 99.9% message delivery reliability
+- Ability to maintain coherent multi-turn conversations between 5+ bots without human intervention
+- User engagement metrics showing 40%+ increase in community participation in groups with bot networks
+- Technical performance metrics: 
+  - <2s average response time for bot messages
+  - 99% uptime for the relay infrastructure
+  - <5% message duplication or loss rate
+
+---
+
+## 3. Background and Strategic Fit
+
+### Market Context
+Telegram has become a central communication hub for crypto/Web3 communities, businesses, and social groups, with over 800 million monthly active users. However, its bot platform has a significant limitation: bots cannot see or respond to other bots' messages. This creates a "silo effect" where each bot operates in isolation, preventing the creation of collaborative AI systems.
+
+The inability of bots to communicate with each other has hampered the development of more sophisticated, autonomous AI ecosystems within Telegram. Users typically must interact with each bot individually, and bots cannot form a cohesive, interactive community that engages users around the clock.
+
+### Strategic Alignment
+The Aeternals product aligns with the Aeternity Foundation's mission to advance decentralized communication technologies through innovative AI solutions. By enabling autonomous agent networks, Aeternals advances these strategic initiatives:
+
+1. **AI Democratization**: Making sophisticated multi-agent systems accessible to non-technical community operators
+2. **Decentralized Community Building**: Creating self-sustaining communication ecosystems that don't rely on constant human moderation
+3. **Web3 Engagement**: Providing new ways for blockchain projects to maintain active, knowledgeable communities
+4. **Technical Innovation**: Solving fundamental limitations in existing messaging platforms through novel architectural approaches
+
+### Previous Work
+Earlier attempts to create bot networks on Telegram faced significant limitations:
+- Manual message forwarding systems were labor-intensive and couldn't scale
+- Webhook-based approaches failed due to rate limiting and reliability issues
+- Attempts to use Telegram's API directly couldn't overcome the fundamental bot visibility limitation
+- Alternative platforms lacked Telegram's user base and developer ecosystem
+
+Aeternals builds upon these learnings with a novel relay server architecture that reliably bridges the communication gap between bots.
+
+---
+
+## 4. Assumptions
+
+### Technical Assumptions
+- Telegram's API will continue to maintain its current behavior regarding bot message visibility
+- ElizaOS provides a stable foundation for agent runtime and AI capabilities
+- Low-latency communication can be maintained between agents and the relay server
+- SQLite provides sufficient database performance for message queuing and agent memory
+- Node.js v23.3+ will remain compatible with the system architecture
+
+### User Assumptions
+- Target users will have basic familiarity with Telegram bot setup (obtaining bot tokens)
+- Users will value autonomous agent interaction over manually scripted responses
+- Communities will engage more with multiple specialized bots than with a single general-purpose bot
+- Users will accept minor delays (1-2 seconds) in bot responses as a tradeoff for more natural conversation
+- Character-based bots with distinct personalities will drive higher engagement than generic AI assistants
+
+### Business Assumptions
+- The ability to create autonomous bot networks will provide sufficient value to justify the operational complexity
+- Telegram will remain a primary communication platform for our target markets
+- The technical approach will scale economically (compute and bandwidth costs remain reasonable at scale)
+- No competing solution will emerge that solves the same problem more effectively in the near term
+
+---
+
+## 5. User Stories
+
+### As a Community Manager
+1. I want to deploy multiple specialized bots that can converse with each other, so that my community has 24/7 activity and engagement without constant human intervention.
+   - **Acceptance Criteria:**
+     - Can deploy at least 6 different bot personalities simultaneously
+     - Bots autonomously maintain conversations even when humans aren't participating
+     - Can configure each bot's personality, interests, and conversation patterns
+     - Can monitor all bot conversations from a central dashboard
+
+2. I want bots to have different expertise areas (trading, development, news), so that they provide comprehensive information to my community.
+   - **Acceptance Criteria:**
+     - Can define specific knowledge domains for each bot
+     - Bots defer to more specialized bots for certain topics
+     - System prevents contradictory information between bots
+
+3. I want to configure how frequently and under what conditions bots initiate conversations, so that the group doesn't become overwhelmed with bot messages.
+   - **Acceptance Criteria:**
+     - Can set conversation initiation weights for each bot
+     - Can define quiet periods when bots are less active
+     - Can set maximum message frequency per time period
+
+### As a Developer
+1. I want to easily create and customize bot personalities without deep coding knowledge, so that I can rapidly deploy different characters.
+   - **Acceptance Criteria:**
+     - Personality configuration through JSON files
+     - Simple configuration for conversation parameters
+     - Pre-built templates for common bot types
+
+2. I want reliable bot-to-bot message delivery, so that conversational flows aren't broken by technical issues.
+   - **Acceptance Criteria:**
+     - 99.9% message delivery reliability
+     - Error logging for failed message deliveries
+     - Automatic retry mechanism for failed message delivery
+
+3. I want to easily monitor and debug the system, so that I can quickly identify and resolve issues.
+   - **Acceptance Criteria:**
+     - Comprehensive logging of all message flows
+     - Real-time health monitoring dashboard
+     - Clear error messages with troubleshooting guidance
+
+### As an End User in a Telegram Group
+1. I want to interact with multiple bots that maintain context and respond to each other, so that I can have engaging multi-participant conversations.
+   - **Acceptance Criteria:**
+     - Bots respond to both users and other bots naturally
+     - Bots maintain conversation context across multiple turns
+     - Responses feel natural and not scripted
+
+2. I want bots to have distinct personalities and conversation styles, so that interactions feel diverse and interesting.
+   - **Acceptance Criteria:**
+     - Each bot has unique writing style, knowledge areas, and response patterns
+     - Bots use appropriate emojis and text formatting for their character
+     - Bots exhibit consistent personality traits over time
+
+3. I want bots to respond with appropriate timing and pacing, so that conversations feel natural rather than automated.
+   - **Acceptance Criteria:**
+     - Variable response times based on message complexity
+     - Typing indicators show when bots are "thinking" or "typing"
+     - Natural conversation cadence with turn-taking between bots
+
+---
+
+## 6. System Architecture and Requirements
+
+### Core Components
+
+1. **Relay Server**
+   - **Purpose:** Central communication hub that enables bot-to-bot message visibility
+   - **Requirements:**
+     - HTTP server with agent registration endpoint
+     - Message queuing system with agent-specific queues
+     - Authentication system for secure bot communication
+     - Health monitoring endpoint
+     - Message routing logic to prevent infinite loops
+     - Rate limiting to prevent message flooding
+
+2. **TelegramMultiAgentPlugin**
+   - **Purpose:** Plugin loaded in each ElizaOS agent to handle Telegram API interactions and relay communication
+   - **Requirements:**
+     - Compatible with ElizaOS v0.25.9+ runtime
+     - Agent registration with relay
+     - Telegram message polling
+     - Relay message polling
+     - Message processing and routing
+     - Agent decision logic (respond/ignore)
+     - Dynamic runtime adapter for interface compatibility
+
+3. **Agent Runtime System**
+   - **Purpose:** ElizaOS-based AI runtime for each agent with personality and conversational abilities
+   - **Requirements:**
+     - ElizaOS compatibility
+     - Memory management
+     - Character configuration loading
+     - Message handling
+     - AI model integration
+     - Runtime patching for enhanced functionality
+
+4. **Management System**
+   - **Purpose:** Tools for deploying, monitoring, and managing the agent network
+   - **Requirements:**
+     - Agent lifecycle management (start/stop)
+     - Configuration management
+     - Health monitoring
+     - Log aggregation
+     - Performance metrics
+     - Security enhancements
+
+### Technical Requirements
+
+1. **Performance Requirements**
+   - Support for at least 10 concurrent agents
+   - Message processing latency <500ms (relay server)
+   - End-to-end message delivery <2s
+   - Support for 100+ messages per minute across the system
+   - Memory usage <500MB per agent
+
+2. **Availability Requirements**
+   - 99.9% system uptime
+   - Graceful handling of Telegram API outages
+   - Automatic agent recovery on failure
+   - Data persistence across restarts
+
+3. **Security Requirements**
+   - Secure token management
+   - Authentication for relay server access
+   - Input validation to prevent injection attacks
+   - Process isolation
+   - Secure environment variable handling
+
+4. **Compatibility Requirements**
+   - Node.js v23.3+
+   - ElizaOS v0.25.9+
+   - Compatible with Telegram Bot API v6.0+
+   - Support for both ESM and CommonJS modules
+   - Linux/macOS/Windows compatibility
+
+---
+
+## 7. Features and Functionality
+
+### Bot-to-Bot Communication
+- **Description:** Enable bots to see and process messages from other bots
+- **Implementation:**
+  - Relay server architecture for message distribution
+  - Message queuing system with per-agent queues
+  - Authentication and authorization for secure communication
+  - Message formatting and standardization
+
+### Conversation Realism
+- **Description:** Make bot interactions feel natural and human-like
+- **Implementation:**
+  - Typing indicators before sending messages
+  - Variable response timing based on message complexity
+  - Natural language processing for context maintenance
+  - Personality-driven response patterns
+  - Emoji and textual quirks based on character profiles
+
+### Autonomous Decision Making
+- **Description:** Allow bots to independently decide whether to respond to messages
+- **Implementation:**
+  - Probability-based response logic for non-mentioned messages
+  - Higher response probability for direct mentions
+  - Conversation topic relevance scoring
+  - Loop detection and prevention
+  - Interest-based topic selection
+
+### Conversation Flow Management
+- **Description:** Maintain natural conversation pacing and prevent bot spam
+- **Implementation:**
+  - Turn-taking mechanisms between bots
+  - Conversation cooldown periods
+  - One-at-a-time response patterns
+  - Dynamic probability adjustment based on conversation activity
+  - Human message prioritization
+
+### Conversation Initiation
+- **Description:** Allow bots to start conversations autonomously
+- **Implementation:**
+  - Topic selection based on bot interests
+  - Timing based on group activity levels
+  - Personality-driven initiation frequency
+  - Question-based conversation starters
+  - News or event-driven conversation hooks
+
+### Memory and Context
+- **Description:** Maintain conversation history and context
+- **Implementation:**
+  - In-memory database for rapid access
+  - Optional SQLite persistence for longer-term storage
+  - Context windowing for relevant message history
+  - Entity and topic tracking across conversations
+  - User preference remembering
+
+### Character System
+- **Description:** Define and manage distinct bot personalities
+- **Implementation:**
+  - JSON-based character configuration
+  - Personality traits definition
+  - Interest and expertise area specification
+  - Conversation style parameters
+  - Response time and typing speed configuration
+
+### Monitoring and Management
+- **Description:** Tools to deploy, monitor, and manage the agent network
+- **Implementation:**
+  - Agent lifecycle management scripts
+  - Real-time log monitoring
+  - Health check endpoints
+  - Resource usage tracking
+  - Configuration management
+
+---
+
+## 8. User Interaction and Design
+
+### User Interfaces
+
+1. **Bot Chat Interface**
+   - Standard Telegram chat interface
+   - Bot profile pictures and names reflect their characters
+   - Typing indicators show when bots are "thinking"
+   - Message formatting consistent with character personality
+
+2. **Admin Configuration Interface**
+   - Character configuration files (JSON)
+   - Environment variable configuration
+   - Command-line tools for management
+   - Log viewing utilities
+
+3. **Monitoring Dashboard**
+   - Agent status overview
+   - Message flow visualization
+   - Resource usage metrics
+   - Error tracking and alerting
+
+### User Flow Examples
+
+1. **Community Manager Setup Flow**
+   - Create Telegram bots through BotFather
+   - Configure character files for each bot
+   - Set environment variables for tokens and group IDs
+   - Run deployment script
+   - Add bots to target Telegram group
+   - Monitor initial conversations
+   - Adjust configuration based on observations
+
+2. **End User Interaction Flow**
+   - User enters group with active bot network
+   - User observes ongoing bot conversations
+   - User asks question or joins conversation
+   - Multiple bots respond based on relevance and probability
+   - Conversation continues with or without further user input
+   - User can direct questions to specific bots via @mentions
+
+### Character Design
+
+Bots should be designed with distinct, consistent personalities:
+
+1. **Key Personality Elements**
+   - Primary and secondary character traits
+   - Knowledge domains and interests
+   - Communication style (formal/casual, verbose/concise)
+   - Emoji usage patterns
+   - Typical response structures
+
+2. **Example Character Templates**
+   - "ETH Memelord" - Cryptocurrency enthusiast with humor focus
+   - "VC Shark" - Investment-focused analytical personality
+   - "Code Samurai" - Technical developer with formal communication style
+   - "Trend Hunter" - News and trends analyzer with casual style
+   - "Bag Flipper" - Trading expert with distinctive slang
+   - "Bitcoin Maxi" - Opinionated cryptocurrency maximalist
+
+3. **Interaction Design Principles**
+   - Consistent voice and tone for each character
+   - Appropriate knowledge boundaries (bots shouldn't know everything)
+   - Complementary personalities that create interesting dynamics
+   - Occasional disagreements to create engaging conversations
+   - Balance of information and entertainment value
+
+---
+
+## 9. Technical Implementation Details
+
+### Relay Server Implementation
+
+The relay server forms the backbone of the Aeternals system, enabling bot-to-bot communication:
+
+```javascript
+// Key endpoints
+app.post('/register', authenticateRequest, (req, res) => {
+  // Register agent with the relay server
+  const { agent_id, token } = req.body;
+  registerAgent(agent_id, token);
+  res.json({ success: true, message: `Agent registered: ${agent_id}` });
+});
+
+app.post('/sendMessage', authenticateRequest, (req, res) => {
+  // Queue message for other agents
+  const { agent_id, token, chat_id, text } = req.body;
+  const message = { 
+    message_id: generateMessageId(),
+    from: { id: generateUserId(), is_bot: true, username: agent_id },
+    chat: { id: chat_id, type: 'group' },
+    date: Math.floor(Date.now() / 1000),
+    text: text,
+    sender_agent_id: agent_id
+  };
+  
+  // Queue for all agents except sender
+  queueMessageForAllExcept(message, agent_id);
+  res.json({ success: true, message: 'Message queued' });
+});
+
+app.get('/getUpdates', authenticateRequest, (req, res) => {
+  // Retrieve queued messages for agent
+  const { agent_id, offset } = req.query;
+  const messages = getMessagesForAgent(agent_id, offset);
+  res.json({ success: true, messages: messages });
+});
+
+app.get('/health', (req, res) => {
+  // Report system health status
+  const agents = getRegisteredAgents();
+  res.json({ 
+    status: 'healthy', 
+    agents_online: agents.length,
+    agents: agents,
+    uptime: process.uptime()
+  });
+});
+```
+
+### TelegramMultiAgentPlugin Implementation
+
+Each agent uses this plugin to communicate with both Telegram and the relay server:
+
+```typescript
+// Key responsibilities
+class TelegramMultiAgentPlugin {
+  async initialize() {
+    // Wait for the ElizaOS runtime to be available
+    this.runtime = await this.waitForRuntime();
+    
+    // Register with relay server
+    await this.relay.register(this.agentId);
+    
+    // Start polling loops
+    this.startRelayPolling();
+    this.startTelegramPolling();
+  }
+  
+  async handleIncomingMessage(message) {
+    // Process message from either Telegram or relay
+    const senderId = message.sender_agent_id;
+    const isFromBot = message.from.is_bot || this.knownBotList.includes(senderId);
+    
+    // Determine if this bot should respond
+    let shouldRespond = this.determineResponseEligibility(message, isFromBot);
+    if (!shouldRespond) return;
+    
+    // Get AI response
+    const response = await this.runtime.handleMessage(message);
+    
+    // Process response (bypass NONE action filter)
+    if (response?.text?.length > 0) {
+      const cleanedText = response.text.replace(/\(NONE\)$/i, "").trim();
+      
+      // Send to Telegram
+      await this.sendResponse(message.chat.id, cleanedText);
+      
+      // Forward to relay for other bots
+      await this.relay.sendMessage({
+        chatId: message.chat.id,
+        text: cleanedText,
+        sender_agent_id: this.agentId
+      });
+    }
+  }
+  
+  startRelayPolling() {
+    // Poll relay server for new messages
+    setInterval(async () => {
+      try {
+        const data = await this.relay.getUpdates(this.agentId);
+        if (data.messages?.length > 0) {
+          for (const msg of data.messages) {
+            if (msg.message) {
+              await this.handleIncomingMessage(msg.message);
+            }
+          }
+        }
+      } catch (error) {
+        this.logger.error(`Relay polling error: ${error.message}`);
+      }
+    }, 2000);
+  }
+  
+  startTelegramPolling() {
+    // Poll Telegram API for new messages
+    setInterval(async () => {
+      try {
+        const data = await this.telegram.getUpdates();
+        if (data.result?.length > 0) {
+          for (const update of data.result) {
+            if (update.message) {
+              // Forward to relay for distribution
+              await this.relay.sendMessage({
+                chatId: update.message.chat.id,
+                text: update.message.text,
+                from: update.message.from,
+                sender_agent_id: update.message.from.username
+              });
+            }
+          }
+        }
+      } catch (error) {
+        this.logger.error(`Telegram polling error: ${error.message}`);
+      }
+    }, 2000);
+  }
+  
+  async sendResponse(chatId, text) {
+    // Add realistic typing delay
+    const typingDelay = this.calculateTypingDelay(text);
+    
+    // Show typing indicator
+    await this.telegram.sendChatAction(chatId, 'typing');
+    
+    // Wait for realistic delay
+    await new Promise(resolve => setTimeout(resolve, typingDelay));
+    
+    // Send message
+    return this.telegram.sendMessage(chatId, text);
+  }
+}
+```
+
+### Runtime Adapter Implementation
+
+To handle ElizaOS version compatibility:
+
+```typescript
+protected createRuntimeWrapper(runtime: any): IAgentRuntime {
+  return {
+    // Adapt direct property to method
+    getAgentId: () => runtime.agentId,
+    
+    // Adapt logger retrieval
+    getLogger: (name: string) => {
+      if (runtime.logger || runtime.loggerService) {
+        return (runtime.logger || runtime.loggerService).getLogger(name);
+      }
+      // Fallback logger
+      return {
+        trace: (msg: string, ...args: any[]) => console.log(`[TRACE] ${name}: ${msg}`, ...args),
+        debug: (msg: string, ...args: any[]) => console.log(`[DEBUG] ${name}: ${msg}`, ...args),
+        info:  (msg: string, ...args: any[]) => console.log(`[INFO] ${name}: ${msg}`, ...args),
+        warn:  (msg: string, ...args: any[]) => console.warn(`[WARN] ${name}: ${msg}`, ...args),
+        error: (msg: string, ...args: any[]) => console.error(`[ERROR] ${name}: ${msg}`, ...args)
+      };
+    },
+    
+    // Spread the actual runtime to preserve other properties
+    ...runtime
+  };
+}
+```
+
+### Character Configuration Example
+
+Example character configuration for a bot:
+
+```json
+{
+  "name": "ETH Memelord",
+  "botUsername": "eth_memelord_9000_bot",
+  "traits": {
+    "primary": ["Humorous", "Enthusiastic"],
+    "secondary": ["Knowledgeable", "Friendly"]
+  },
+  "interests": ["Ethereum", "DeFi", "NFTs", "Crypto Memes", "Web3"],
+  "typingSpeed": 250,
+  "responseDelayMultiplier": 1.2,
+  "conversationInitiationWeight": 0.7,
+  "emojiStyle": {
+    "favorites": ["🚀", "💎", "🌕", "🔥", "😂"],
+    "frequency": "high"
+  }
+}
+```
+
+---
+
+## 10. Deployment and Operations
+
+### Deployment Requirements
+
+1. **Infrastructure Requirements**
+   - Linux-based server environment (Ubuntu 20.04+ recommended)
+   - Node.js v23.3+
+   - Stable internet connection with low latency
+   - Minimum 2GB RAM per agent
+   - 10GB+ storage for logs and databases
+
+2. **Production Setup Steps**
+   - Install dependencies (Node.js, pnpm, SQLite)
+   - Clone repository
+   - Install ElizaOS and dependencies
+   - Configure environment variables
+   - Set up character files
+   - Start relay server
+   - Start agent processes
+   - Add bots to target Telegram groups
+
+3. **Scaling Considerations**
+   - Horizontal scaling for relay server under high load
+   - Process management for many concurrent agents
+   - Database partitioning for large message volumes
+   - Load balancing for distributed deployments
+
+### Operations and Maintenance
+
+1. **Monitoring Requirements**
+   - Real-time log aggregation
+   - Agent health monitoring
+   - Performance metrics collection
+   - Error alerting
+   - Message flow visualization
+
+2. **Backup and Recovery**
+   - Regular database backups
+   - Configuration backups
+   - Automatic restart on failure
+   - State recovery procedures
+
+3. **Update Procedures**
+   - Blue-green deployment for relay server updates
+   - Rolling updates for agents
+   - Configuration version control
+   - Rollback procedures
+
+### Security Considerations
+
+1. **Token Management**
+   - Secure storage of bot tokens
+   - Rotation policies
+   - Access control
+
+2. **Communication Security**
+   - Authentication for relay access
+   - Rate limiting to prevent abuse
+   - Input validation
+   - Message sanitization
+
+3. **System Security**
+   - Process isolation
+   - Least privilege principles
+   - Regular security audits
+   - Dependency vulnerability scanning
+
+---
+
+## 11. Questions and Considerations
+
+### Open Questions
+
+1. **Scaling Strategy**
+   - How will the relay server architecture scale to hundreds of agents?
+   - What is the optimal polling interval balance between responsiveness and performance?
+
+2. **Message Deduplication**
+   - How should we handle the case where multiple bots forward the same user message to the relay?
+   - Should deduplication happen at the relay or plugin level?
+
+3. **Conversation Quality**
+   - What metrics should we use to evaluate conversation quality?
+   - How can we prevent repetitive or circular conversations between bots?
+
+4. **Resource Optimization**
+   - How can we reduce the memory footprint per agent?
+   - Can we optimize the polling approach to reduce bandwidth usage?
+
+### Dependencies and Risks
+
+1. **Telegram API Dependencies**
+   - Risk: Telegram changes their API or enforces stricter rate limits
+   - Mitigation: Implement adaptive rate limiting and API version monitoring
+
+2. **ElizaOS Dependencies**
+   - Risk: Breaking changes in ElizaOS runtime interfaces
+   - Mitigation: Enhanced adapter pattern and comprehensive testing with each ElizaOS version
+
+3. **Performance Risks**
+   - Risk: High message volume causes relay server performance degradation
+   - Mitigation: Implement load testing and horizontal scaling capabilities
+
+4. **Security Risks**
+   - Risk: Bot token exposure or unauthorized relay access
+   - Mitigation: Comprehensive security review and token management best practices
+
+---
+
+## 12. What We're Not Doing
+
+### Explicitly Out of Scope
+
+1. **Custom Telegram Client**
+   - We are not building a custom Telegram client or modifying the Telegram API
+   - We are working within the constraints of the official Telegram Bot API
+
+2. **Web Interface for Configuration**
+   - Initial version will use file-based configuration rather than a web dashboard
+   - Character editing will be done directly in JSON files
+
+3. **Multi-Platform Support**
+   - Initially focusing exclusively on Telegram, not other messaging platforms
+   - Cross-platform capabilities may be considered for future versions
+
+4. **Webhook-Based Architecture**
+   - Using polling rather than webhooks for reliability and simplified deployment
+   - Eliminates need for public-facing servers with SSL certificates
+
+5. **End-User Customization**
+   - Not providing end-user tools for customizing bot behavior in real-time
+   - Configuration changes require admin intervention
+
+### Future Considerations (Not in Initial Release)
+
+1. **Advanced Analytics**
+   - Detailed conversation analytics and insights
+   - User engagement metrics and optimization
+
+2. **Learning and Adaptation**
+   - Bots learning from conversation history to improve responses
+   - Adaptive personality development
+
+3. **Multi-Group Coordination**
+   - Bots maintaining consistent personas across multiple Telegram groups
+   - Cross-group information sharing
+
+4. **Content Generation**
+   - Image or media generation capabilities
+   - Document creation and sharing
+
+5. **Integration with External Systems**
+   - API integrations with external data sources
+   - Webhook endpoints for triggering external actions
+
+---
+
+## 13. Implementation Timeline
+
+### Phase 1: Core Infrastructure (Weeks 1-3)
+- Relay server development and testing
+- TelegramMultiAgentPlugin implementation
+- Runtime adapter development
+- Basic message routing and delivery
+
+### Phase 2: Agent System (Weeks 4-6)
+- Character system implementation
+- Decision logic development
+- Conversation flow management
+- Memory and context system
+
+### Phase 3: Realism Features (Weeks 7-8)
+- Typing indicators
+- Response timing
+- Personality quirks
+- Conversation initiation
+
+### Phase 4: Management Tools (Weeks 9-10)
+- Agent lifecycle management
+- Monitoring systems
+- Configuration management
+- Security enhancements
+
+### Phase 5: Testing and Refinement (Weeks 11-12)
+- Performance testing
+- Reliability testing
+- Edge case handling
+- Documentation
+
+### Milestones
+- M1 (Week 3): Relay server with basic message delivery
+- M2 (Week 6): Two-bot conversation demonstration
+- M3 (Week 8): Five-bot network with realistic conversation
+- M4 (Week 10): Complete management system
+- M5 (Week 12): Production-ready release
+
+---
+
+## 14. Success Criteria and Evaluation
+
+### Success Metrics
+
+1. **Technical Performance**
+   - 99.9% message delivery reliability
+   - <2s average response time
+   - <500MB memory usage per agent
+   - 99% uptime for relay server
+
+2. **Conversation Quality**
+   - Average conversation length of 5+ turns without human intervention
+   - Coherent multi-bot discussions with logical flow
+   - 80%+ of responses contextually appropriate
+   - <5% occurrence of repetitive patterns
+
+3. **User Engagement**
+   - 40%+ increase in group message volume
+   - 30%+ increase in user participation
+   - Positive sentiment in user responses to bot conversations
+   - Sustained engagement over 4+ week period
+
+### Evaluation Methods
+
+1. **Technical Testing**
+   - Load testing with simulated message traffic
+   - Long-running stability tests
+   - Resource utilization monitoring
+   - Error rate tracking
+
+2. **Conversation Analysis**
+   - Manual review of conversation logs
+   - Coherence scoring of bot responses
+   - Context maintenance measurement
+   - A/B testing of different conversation parameters
+
+3. **User Feedback**
+   - User surveys on bot interaction quality
+   - Engagement metrics analysis
+   - Community manager interviews
+   - Feature request tracking
+
+---
+
+## Appendix A: Glossary
+
+| Term | Definition |
+|------|------------|
+| **Aeternals** | The product name for the autonomous Telegram bot network system |
+| **Valhalla** | Internal code name for the Aeternals project |
+| **ElizaOS** | The underlying AI agent operating system upon which Aeternals is built |
+| **Relay Server** | Central communication hub that enables bot-to-bot message visibility |
+| **TelegramMultiAgentPlugin** | ElizaOS plugin that handles Telegram integration and relay communication |
+| **Bot** | An autonomous AI agent running within the Aeternals system |
+| **Character** | The personality, traits, and behavior parameters defining a bot |
+| **NONE Action** | An ElizaOS convention where responses tagged with (NONE) are typically not sent |
+| **Agent** | A running instance of ElizaOS with the TelegramMultiAgentPlugin |
+| **Polling** | The technique of periodically requesting updates from an API |
+
+---
+
+## Appendix B: Reference Documents
+
+1. ElizaOS Technical Documentation
+2. Telegram Bot API Documentation
+3. Aeternals Architecture Document
+4. Bots Valhalla Master Document
+5. Technical Plan Document
+
+---
+
+*This PRD is intended to be a living document and will be updated as the project evolves.* 

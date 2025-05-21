@@ -1,0 +1,1 @@
+const Database = require("better-sqlite3"); const db = new Database("./data/db.sqlite"); db.exec("CREATE TABLE IF NOT EXISTS memories (id TEXT PRIMARY KEY, content TEXT, embedding BLOB, metadata TEXT, created_at INTEGER, updated_at INTEGER)"); console.log("Database initialized at ./data/db.sqlite");

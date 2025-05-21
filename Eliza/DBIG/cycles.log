@@ -1,0 +1,39 @@
+(node:4130383) ExperimentalWarning: CommonJS module /root/.nvm/versions/node/v23.3.0/lib/node_modules/npm/node_modules/debug/src/node.js is loading ES Module /root/.nvm/versions/node/v23.3.0/lib/node_modules/npm/node_modules/supports-color/index.js using require().
+Support for loading ES Module in require() is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+- Finding files
+
+# Circular Dependencies Log
+
+## File-Level Circular Dependencies (detected by madge)
+
+The following circular dependencies were detected at the file/module level:
+
+```
+telegram-multiagent/src/TelegramMultiAgentPlugin.ts > telegram-multiagent/src/ConversationKickstarter.ts > telegram-multiagent/src/ConversationManager.ts
+```
+
+## Package-Level Circular Dependencies (detected through manual analysis)
+
+The following circular dependencies exist at the package.json level but were not detected by file-level analysis:
+
+```
+@elizaos/core > @elizaos/adapter-sqlite > @elizaos/core
+```
+
+This is a critical issue that can cause build problems and runtime issues. See `circular-dependencies-analysis.md` for a detailed explanation and recommended solutions.
+
+## Skipped Files
+
+The following files were skipped during circular dependency analysis:
+
+```
+../../core/dist/public-api
+@elizaos/core/public-api
+../types
+@elizaos/adapter-sqljs
+@elizaos/adapter-supabase
+@elizaos/adapter-pglite
+@supabase/supabase-js
+@electric-sql/pglite
+```

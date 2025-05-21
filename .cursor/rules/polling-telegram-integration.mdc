@@ -1,0 +1,104 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Polling and Telegram Integration Rule
+
+## Overview
+This rule establishes standards for implementing polling mechanisms and Telegram integration in ElizaOS, ensuring reliable message delivery and processing.
+
+## Implementation Details
+
+### Telegram Integration
+
+#### Polling Mode
+- **Recommended for all deployments**
+- No public endpoint required
+- Polling is only activated from the ElizaOS Telegram client.
+- The telegram-multiagent plugin must not poll to avoid 409 errors due to concurrent updates handling.
+- Configuration in `.env`:
+  ```
+  # For telegram-multiagent plugin (default)
+  TELEGRAM_BOT_TOKEN_eth_memelord_9000=123456:ABC-DEF1234ghij
+  TELEGRAM_GROUP_IDS=-1002550681173
+  
+  # For default polling configuration
+  TELEGRAM_POLLING_TIMEOUT=30
+  ```
+- Default polling interval: 100ms
+- Default polling timeout: 30 seconds
+
+### Polling Implementation for telegram-multiagent Plugin
+
+The telegram-multiagent plugin uses polling by default:
+
+```typescript
+// From telegram-multiagent plugin
+const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { 
+  polling: true,
+  params: {
+    timeout: parseInt(process.env.TELEGRAM_POLLING_TIMEOUT || '30')
+  }
+});
+```
+
+### Polling Best Practices
+
+1. **Error Handling**
+   - Implement exponential backoff for failed poll attempts
+   - Log polling errors with appropriate severity
+   - Automatically restart polling after connection errors
+
+2. **Resource Management**
+   - Implement proper cleanup on shutdown
+   - Avoid multiple polling instances to same Telegram bot
+   - Set reasonable polling timeouts to avoid resource exhaustion
+
+3. **Message Processing**
+   - Process messages in a queue to prevent blocking
+   - Implement middleware pattern for message filtering
+   - Handle message updates in order of arrival
+
+### Implementation Example
+
+```typescript
+import { Telegraf } from 'telegraf';
+import { message } from 'telegraf/filters';
+
+const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
+
+// Polling setup
+const pollingTimeout = parseInt(process.env.TELEGRAM_POLLING_TIMEOUT || '30');
+
+bot.launch({
+  polling: {
+    timeout: pollingTimeout,
+    allowedUpdates: ['message', 'callback_query']
+  }
+});
+
+console.log(`Polling started with timeout ${pollingTimeout}s`);
+
+// Graceful stop
+process.once('SIGINT', () => bot.stop('SIGINT'));
+process.once('SIGTERM', () => bot.stop('SIGTERM'));
+```
+
+### Troubleshooting Telegram Integration
+
+1. **Polling Problems**
+   - Verify network connectivity to Telegram API
+   - Check for IP blocking or rate limiting
+   - Ensure only one instance is polling the bot
+   - Verify the bot token is correct in .env
+
+2. **Message Processing Errors**
+   - Implement logging for all message events
+   - Use try/catch blocks around message handlers
+   - Implement fallback handlers for unexpected message types
+
+3. **Performance Considerations**
+   - Monitor polling frequency and adjust as needed
+   - Implement message batching for bulk processing
+   - Set appropriate timeouts to balance responsiveness and resource usage 

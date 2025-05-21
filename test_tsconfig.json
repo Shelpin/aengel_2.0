@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@elizaos/core/*": ["./packages/core/*"],
+      "@elizaos/*": ["./packages/*"]
+    }
+  },
+  "include": ["test_type_resolution.ts"]
+} 

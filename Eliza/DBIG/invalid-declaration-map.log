@@ -1,0 +1,58 @@
+# Invalid Declaration Map Log
+
+## @elizaos/adapter-sqlite
+
+Found 4 .d.ts files in dist directory.
+
+Declaration map files: 0
+
+index.d.ts exists: Yes
+public-api.d.ts exists: Yes
+
+## @elizaos/agent
+
+No .d.ts files found in dist directory.
+
+## cli
+
+No dist directory found.
+
+## @elizaos/client-direct
+
+No .d.ts files found in dist directory.
+
+## @elizaos-plugins/clients
+
+No dist directory found.
+
+## @elizaos/core
+
+Found 40 .d.ts files in dist directory.
+
+Declaration map files: 0
+
+index.d.ts exists: Yes
+public-api.d.ts exists: Yes
+
+## @elizaos/dynamic-imports
+
+Found 2 .d.ts files in dist directory.
+
+Declaration map files: 0
+
+index.d.ts exists: Yes
+public-api.d.ts exists: Yes
+
+## @elizaos/plugin-bootstrap
+
+Found 17 .d.ts files in dist directory.
+
+Declaration map files: 17
+
+index.d.ts exists: Yes
+public-api.d.ts exists: Yes
+
+## @elizaos/telegram-multiagent
+
+No .d.ts files found in dist directory.
+

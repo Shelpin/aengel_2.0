@@ -1,0 +1,129 @@
+=== ElizaOS Package Build Logs ===
+Build started at: Fri 18 Apr 2025 09:45:30 AM CEST
+Working from directory: /root/eliza
+
+=== Building all packages using pnpm ===
+Scope: 10 of 11 workspace projects
+packages/cli build$ echo 'No build required.'
+packages/clients build$ echo 'No build required.'
+packages/clients/telegram prebuild$ rimraf dist && mkdir -p dist
+packages/dynamic-imports prebuild$ rimraf dist && mkdir -p dist
+packages/cli build: No build required.
+packages/clients build: No build required.
+packages/clients build: Done
+packages/cli build: Done
+packages/dynamic-imports prebuild: Done
+packages/dynamic-imports build$ tsc -p tsconfig.build.json
+packages/clients/telegram prebuild: Done
+packages/clients/telegram build$ tsup --config tsup.config.cjs --dts
+packages/clients/telegram build: CLI Building entry: src/index.ts
+packages/clients/telegram build: CLI Using tsconfig: tsconfig.json
+packages/clients/telegram build: CLI tsup v8.3.5
+packages/clients/telegram build: CLI Using tsup config: /root/eliza/packages/clients/telegram/tsup.config.cjs
+packages/clients/telegram build: CLI Target: node18
+packages/clients/telegram build: CLI Cleaning output folder
+packages/clients/telegram build: ESM Build start
+packages/clients/telegram build: CJS Build start
+packages/clients/telegram build: DTS Build start
+packages/clients/telegram build: CJS dist/index.cjs     2.06 MB
+packages/clients/telegram build: CJS dist/index.cjs.map 3.25 MB
+packages/clients/telegram build: CJS ⚡️ Build success in 3449ms
+packages/clients/telegram build: ESM dist/index.js     2.06 MB
+packages/clients/telegram build: ESM dist/index.js.map 3.25 MB
+packages/clients/telegram build: ESM ⚡️ Build success in 3465ms
+packages/dynamic-imports build: Done
+packages/clients/telegram build: DTS ⚡️ Build success in 7904ms
+packages/clients/telegram build: DTS dist/index.d.ts  1.17 KB
+packages/clients/telegram build: DTS dist/index.d.cts 1.17 KB
+packages/clients/telegram build: Done
+packages/telegram-multiagent prebuild$ rm -rf dist && mkdir -p dist
+packages/telegram-multiagent prebuild: Done
+packages/telegram-multiagent build$ tsc -p tsconfig.build.json
+packages/telegram-multiagent build: src/ConversationManager.ts(12,10): error TS2305: Module '"./types.js"' has no exported member 'IMemoryManager'.
+packages/telegram-multiagent build: src/ConversationManager.ts(231,55): error TS2774: This condition will always return true since this function is always defined. Did you mean to call it instead?
+packages/telegram-multiagent build: src/PersonalityEnhancer.ts(70,30): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+packages/telegram-multiagent build: src/PersonalityEnhancer.ts(861,30): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+packages/telegram-multiagent build: src/TelegramCoordinationAdapter.ts(1130,25): error TS2532: Object is possibly 'undefined'.
+packages/telegram-multiagent build: src/TelegramCoordinationAdapter.ts(1130,25): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+packages/telegram-multiagent build: src/TelegramMultiAgentPlugin.ts(826,27): error TS2532: Object is possibly 'undefined'.
+packages/telegram-multiagent build: src/TelegramMultiAgentPlugin.ts(1006,64): error TS2774: This condition will always return true since this function is always defined. Did you mean to call it instead?
+packages/telegram-multiagent build: src/TelegramMultiAgentPlugin.ts(1241,23): error TS2532: Object is possibly 'undefined'.
+packages/telegram-multiagent build: src/TelegramMultiAgentPlugin.ts(1310,36): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+packages/telegram-multiagent build: src/TelegramMultiAgentPlugin.ts(1310,36): error TS18048: 'runtime.handleMessage' is possibly 'undefined'.
+packages/telegram-multiagent build: src/TelegramMultiAgentPlugin.ts(1639,13): error TS7022: 'minimalTelegramClient' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.
+packages/telegram-multiagent build: src/TelegramMultiAgentPlugin.ts(1902,23): error TS18047: 'message.telegram' is possibly 'null'.
+packages/telegram-multiagent build: src/TelegramMultiAgentPlugin.ts(1950,78): error TS2345: Argument of type '{ messages: { sender: string; text: string; }[]; }' is not assignable to parameter of type 'string'.
+packages/telegram-multiagent build: src/TelegramMultiAgentPlugin.ts(1968,26): error TS2339: Property 'handleMessage' does not exist on type 'TelegramMultiAgentPlugin'.
+packages/telegram-multiagent build: src/index.ts(26,45): error TS2339: Property 'secrets' does not exist on type '{}'.
+packages/telegram-multiagent build: src/index.ts(27,37): error TS2339: Property 'settings' does not exist on type '{}'.
+packages/telegram-multiagent build: Failed
+/root/eliza/packages/telegram-multiagent:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @elizaos/telegram-multiagent@ build: `tsc -p tsconfig.build.json`
+Exit status 2
+Build exit status: 0
+
+Build completed at: Fri 18 Apr 2025 09:45:51 AM CEST
+=== Build Summary ===
+Checking for .d.ts files in dist directories:
+Packages found:
+- cli
+- core
+- adapter-sqlite
+- clients
+- telegram-multiagent
+- dynamic-imports
+- plugin-bootstrap
+- characters
+- client-direct
+- agent
+
+cli: No dist directory found
+
+core: 40 .d.ts files found
+  First 10 d.ts files:
+  - dist/types.d.ts
+  - dist/runtime.d.ts
+  - dist/memory.d.ts
+  - dist/relationships.d.ts
+  - dist/models.d.ts
+  - dist/embedding.d.ts
+  - dist/utils/module-path.d.ts
+  - dist/localembeddingManager.d.ts
+  - dist/generation.d.ts
+  - dist/database.d.ts
+
+adapter-sqlite: 4 .d.ts files found
+  First 10 d.ts files:
+  - dist/sqliteTables.d.ts
+  - dist/public-api.d.ts
+  - dist/sqlite_vec.d.ts
+  - dist/index.d.ts
+
+clients: No dist directory found
+
+telegram-multiagent: 0 .d.ts files found
+
+dynamic-imports: 2 .d.ts files found
+  First 10 d.ts files:
+  - dist/public-api.d.ts
+  - dist/index.d.ts
+
+plugin-bootstrap: 17 .d.ts files found
+  First 10 d.ts files:
+  - dist/providers/facts.d.ts
+  - dist/providers/boredom.d.ts
+  - dist/providers/index.d.ts
+  - dist/providers/time.d.ts
+  - dist/actions/muteRoom.d.ts
+  - dist/actions/ignore.d.ts
+  - dist/actions/followRoom.d.ts
+  - dist/actions/none.d.ts
+  - dist/actions/unmuteRoom.d.ts
+  - dist/actions/continue.d.ts
+
+characters: No dist directory found
+
+client-direct: 0 .d.ts files found
+
+agent: 0 .d.ts files found
+

@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+        "module": "ESNext",
+        "target": "ESNext",
+        "moduleResolution": "node",
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "baseUrl": "..",
+        "paths": {
+            "@elizaos/*": [
+                "packages/*/src"
+            ]
+        }
+    },
+    "include": [
+        "*.ts"
+    ]
+}

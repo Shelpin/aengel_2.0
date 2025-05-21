@@ -1,0 +1,141 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# DBIG Master Build Plan Rule
+
+## Overview
+This rule provides architectural principles and build procedures for ElizaOS DBIG (Database Integration Gateway) components to ensure consistent, reliable building and packaging across development environments.
+
+## Core Principles
+
+### Package Architecture
+- All packages must be structured as standalone npm packages
+- Use monorepo approach via pnpm workspaces
+- Core packages should have minimal dependencies on other packages
+- Plugin packages can depend on core packages but not vice versa
+- Every package must have clear entry points defined in package.json
+
+### Dependency Management
+- Use pnpm for deterministic dependency resolution
+- Lock file must be committed to version control
+- Avoid circular dependencies between packages
+- Prefer explicit dependencies over peer dependencies
+- Use fixed versions for all project dependencies
+- Define all dependencies in `package.json`, not using relative imports
+
+## Build Configuration
+
+### TypeScript Configuration
+- All TypeScript packages must share consistent tsconfig settings
+- Use project references for inter-package dependencies
+- Set `"moduleResolution": "NodeNext"` for ESM compatibility
+- Enable declarations with `"declaration": true`
+- Use standard output directory with `"outDir": "dist"`
+- Configure ESM with:
+  ```json
+  {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2022",
+    "esModuleInterop": true
+  }
+  ```
+
+### Package.json Configuration
+- All packages must include:
+  ```json
+  {
+    "name": "@elizaos-plugins/package-name",
+    "version": "1.0.0",
+    "type": "module",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "import": "./dist/index.js",
+        "types": "./dist/index.d.ts"
+      }
+    },
+    "files": ["dist/**/*"],
+    "scripts": {
+      "build": "tsc -b",
+      "clean": "rm -rf dist",
+      "test": "jest"
+    }
+  }
+  ```
+- Consistent scripts across all packages
+- Use ESM by setting `"type": "module"`
+- Define proper `exports` map for all entry points
+
+## Build Process
+
+### Monorepo Setup
+- Use pnpm workspaces in root `pnpm-workspace.yaml`:
+  ```yaml
+  packages:
+    - 'packages/*'
+  ```
+- Configure root package.json:
+  ```json
+  {
+    "name": "elizaos-dbig",
+    "private": true,
+    "scripts": {
+      "build": "pnpm -r build",
+      "clean": "pnpm -r clean",
+      "test": "pnpm -r test"
+    }
+  }
+  ```
+- Use project references in tsconfig.json:
+  ```json
+  {
+    "references": [
+      { "path": "./packages/core" },
+      { "path": "./packages/adapter-sqlite" }
+    ]
+  }
+  ```
+
+### Build Order
+- Determine correct dependency order for builds
+- Core packages must build first
+- Plugin packages must build after their dependencies
+- Use `tsc -b` with project references to respect build order
+
+### Common Issues and Solutions
+
+#### Circular Dependencies
+- Identify circular dependencies between packages
+- Extract shared code to separate utility packages
+- Use dependency injection to break cycles
+- Document dependency graph for maintainers
+
+#### Module Resolution
+- Ensure consistent imports for `@elizaos-plugins/*` namespaces
+- Verify Node.js compatibility (v23.3+)
+- Test with both ESM and CommonJS consumers
+- Add runtime verification to ensure modules are properly resolved
+
+#### Native Module Compatibility
+- Packages with native dependencies like `better-sqlite3` require:
+  - Proper build pipeline for native modules
+  - Pre-built binaries for target platforms
+  - Fallback mechanisms for incompatible environments
+
+## Versioning and Publishing
+
+### Version Control
+- Follow semantic versioning (MAJOR.MINOR.PATCH)
+- Update all interdependent packages together
+- Use npm/GitHub package registry for publishing
+- Document breaking changes in CHANGELOG.md
+
+### CI/CD Pipeline
+- Automate build, test and verification
+- Validate dependency integrity before publishing
+- Use consistent Node.js environment (v23.3+)
+- Run post-build verification to ensure runtime compatibility 

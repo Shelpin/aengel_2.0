@@ -1,0 +1,328 @@
+# TSUP Entry Resolver Log
+
+## cli
+
+No tsup config file found.
+
+### Package.json Entry Points
+
+main: index.js
+
+## @elizaos/core
+
+```typescript
+import { defineConfig } from "tsup";
+const { baseConfig, commonExternals } = require("../../tsup.base");
+
+export default defineConfig({
+  ...baseConfig,
+  dts: false,
+  entry: ["src/index.ts", "src/public-api.ts", "src/utils/**/*.ts"],
+  external: [
+    ...commonExternals,
+    "@anush008/tokenizers", "tokenizers"
+  ]
+});
+
+```
+
+Detected entry points: "src/index.ts", "src/public-api.ts", "src/utils/**/*.ts"
+
+### Package.json Entry Points
+
+main: dist/index.cjs
+exports:
+```json
+{
+  ".": {
+    "types": "./dist/index.d.ts",
+    "import": "./dist/index.js",
+    "require": "./dist/index.cjs"
+  },
+  "./public-api": {
+    "types": "./dist/public-api.d.ts",
+    "import": "./dist/public-api.js",
+    "require": "./dist/public-api.cjs"
+  },
+  "./utils/*": {
+    "types": "./dist/utils/*.d.ts",
+    "import": "./dist/utils/*.js",
+    "require": "./dist/utils/*.cjs"
+  },
+  "./package.json": "./package.json"
+}
+```
+
+## @elizaos/adapter-sqlite
+
+```typescript
+import { defineConfig } from "tsup";
+const { baseConfig, commonExternals } = require("../../tsup.base");
+
+export default defineConfig({
+    ...baseConfig,
+    dts: false,
+    external: [
+        ...commonExternals,
+        "better-sqlite3", "sqlite3", "sqlite",
+        "@elizaos/core"
+    ]
+}); 
+```
+
+Entry points not detected in config.
+
+### Package.json Entry Points
+
+main: dist/index.cjs
+exports:
+```json
+{
+  ".": {
+    "types": "./dist/index.d.ts",
+    "import": "./dist/index.js",
+    "require": "./dist/index.cjs"
+  },
+  "./public-api": {
+    "types": "./dist/public-api.d.ts",
+    "import": "./dist/public-api.js",
+    "require": "./dist/public-api.cjs"
+  },
+  "./package.json": "./package.json"
+}
+```
+
+## @elizaos/telegram-client
+
+Using alternative config file: tsup.config.cjs
+
+```javascript
+// tsup.config.cjs
+module.exports = {
+  entry: ["src/index.ts"],
+  format: ["esm", "cjs"],
+  dts: true,
+  sourcemap: true,
+  clean: true,
+  target: "node18",
+  outDir: "dist",
+  splitting: false,
+  bundle: true,
+  skipNodeModulesBundle: true,
+  shims: true,
+  minify: false,
+}; 
+```
+
+### Package.json Entry Points
+
+main: dist/index.cjs
+exports:
+```json
+{
+  ".": {
+    "types": "./dist/index.d.ts",
+    "import": "./dist/index.js",
+    "require": "./dist/index.cjs"
+  },
+  "./package.json": "./package.json"
+}
+```
+
+## @elizaos-plugins/clients
+
+No tsup config file found.
+
+### Package.json Entry Points
+
+main: dist/index.mjs
+exports:
+```json
+{
+  ".": {
+    "import": "./dist/index.mjs",
+    "types": "./dist/index.d.ts"
+  },
+  "./telegram": {
+    "types": "./dist/index.d.ts"
+  }
+}
+```
+
+## @elizaos/telegram-multiagent
+
+```typescript
+import { defineConfig } from "tsup";
+const { baseConfig, commonExternals } = require("../../tsup.base");
+
+export default defineConfig({
+    ...baseConfig,
+    external: [
+        ...commonExternals,
+        // Telegram-specific externals
+        "node-telegram-bot-api", "ws",
+        /^@elizaos\/core/,
+        /^@elizaos\/agent/,
+        /^@elizaos\/adapter-sqlite/
+    ]
+}); 
+```
+
+Entry points not detected in config.
+
+### Package.json Entry Points
+
+main: dist/index.cjs
+exports:
+```json
+{
+  ".": {
+    "types": "./dist/index.d.ts",
+    "import": "./dist/index.js",
+    "require": "./dist/index.cjs"
+  },
+  "./package.json": "./package.json"
+}
+```
+
+## @elizaos/dynamic-imports
+
+```typescript
+import { defineConfig } from "tsup";
+const { baseConfig, commonExternals } = require("../../tsup.base");
+
+export default defineConfig({
+    ...baseConfig,
+    external: [
+        ...commonExternals,
+        // Dynamic-imports specific externals
+        /^@elizaos\/core/
+    ]
+}); 
+```
+
+Entry points not detected in config.
+
+### Package.json Entry Points
+
+main: dist/index.cjs
+exports:
+```json
+{
+  ".": {
+    "types": "./dist/index.d.ts",
+    "import": "./dist/index.js",
+    "require": "./dist/index.cjs"
+  },
+  "./package.json": "./package.json"
+}
+```
+
+## @elizaos/plugin-bootstrap
+
+```typescript
+import { defineConfig } from "tsup";
+const { baseConfig, commonExternals } = require("../../tsup.base");
+
+export default defineConfig({
+    ...baseConfig,
+    dts: false,
+    external: [
+        ...commonExternals,
+        // Plugin-bootstrap specific externals
+        /^@elizaos\/core/
+    ]
+}); 
+```
+
+Entry points not detected in config.
+
+### Package.json Entry Points
+
+main: dist/index.cjs
+exports:
+```json
+{
+  ".": {
+    "types": "./dist/index.d.ts",
+    "import": "./dist/index.js",
+    "require": "./dist/index.cjs"
+  },
+  "./public-api": {
+    "types": "./dist/public-api.d.ts",
+    "import": "./dist/public-api.js",
+    "require": "./dist/public-api.cjs"
+  },
+  "./package.json": "./package.json"
+}
+```
+
+## @elizaos/client-direct
+
+```typescript
+import { defineConfig } from "tsup";
+const { baseConfig, commonExternals } = require("../../tsup.base");
+
+export default defineConfig({
+    ...baseConfig,
+    external: [
+        ...commonExternals,
+        // Client-direct specific externals
+        "express", "cors", "ws",
+        /^@elizaos\/core/
+    ]
+}); 
+```
+
+Entry points not detected in config.
+
+### Package.json Entry Points
+
+main: dist/index.cjs
+exports:
+```json
+{
+  ".": {
+    "types": "./dist/index.d.ts",
+    "import": "./dist/index.js",
+    "require": "./dist/index.cjs"
+  },
+  "./package.json": "./package.json"
+}
+```
+
+## @elizaos/agent
+
+```typescript
+import { defineConfig } from "tsup";
+const { baseConfig, commonExternals } = require("../../tsup.base");
+
+export default defineConfig({
+    ...baseConfig,
+    external: [
+        ...commonExternals,
+        // Agent-specific externals
+        "openai", "@vercel/ai",
+        /^@elizaos\/core/,
+        /^@elizaos\/plugin-bootstrap/
+    ]
+}); 
+```
+
+Entry points not detected in config.
+
+### Package.json Entry Points
+
+main: dist/index.cjs
+exports:
+```json
+{
+  ".": {
+    "types": "./dist/index.d.ts",
+    "import": "./dist/index.js",
+    "require": "./dist/index.cjs"
+  },
+  "./package.json": "./package.json"
+}
+```
+

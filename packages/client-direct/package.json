@@ -1,0 +1,33 @@
+{
+  "name": "@elizaos/client-direct",
+  "type": "module",
+  "main": "./dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "prebuild": "rimraf dist",
+    "build": "tsc -b tsconfig.build.json",
+    "clean": "rimraf dist",
+    "test": "jest",
+    "lint": "eslint src/**/*.ts"
+  },
+  "devDependencies": {
+    "@types/multer": "1.4.12"
+  },
+  "dependencies": {
+    "@elizaos/core": "workspace:*",
+    "@elizaos/types": "workspace:*"
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

@@ -1,0 +1,130 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Agent Port Configuration Rule
+
+## Purpose
+This rule establishes standardized practices for port configuration across all ElizaOS agents to ensure consistent networking behavior, prevent port conflicts, and maintain security.
+
+## Requirements
+
+### 1. Agent-Specific Port Assignments
+
+Each agent must use its specifically assigned port:
+
+| Agent Name | Port | Description |
+|------------|------|-------------|
+| eth_memelord_9000 | 3000 | Ethereum meme tracking agent |
+| bag_flipper_9000 | 3001 | Trading strategy agent |
+| linda_evangelista_88 | 3002 | Personal assistant agent |
+| vc_shark_99 | 3003 | Venture capital analysis agent |
+| bitcoin_maxi_420 | 3004 | Bitcoin maximalist agent |
+| code_samurai_77 | 3005 | Code review and assistance agent |
+| relay server | 4000 | Communication relay server |
+
+### 2. Configuration Storage
+
+Port configurations must be stored in one of the following ways:
+
+1. **Environment Variables** (preferred):
+   ```
+   AGENT_PORT=3000  # Set in launch-agent.sh or environment
+   RELAY_SERVER_URL=http://localhost:4000
+   ```
+
+
+
+3. **Command Line Arguments**:
+   ```bash
+   pnpm run start:agent -- --port=3000 --characters="characters/eth_memelord_9000.json"
+   ```
+
+Example configuration implementation:
+```typescript
+import { config } from '@elizaos/core';
+
+// Load configuration with fallback values
+const agentConfig = {
+  port: process.env.AGENT_PORT || 3000,
+  host: process.env.AGENT_HOST || 'localhost'
+};
+
+// Start service with configured port
+const server = app.listen(agentConfig.port, agentConfig.host, () => {
+  logger.info(`Agent started on ${agentConfig.host}:${agentConfig.port}`);
+});
+```
+
+### 3. Port Conflict Resolution
+
+Agents must implement port conflict detection and resolution:
+
+1. **Detection**: Attempt to bind to the configured port
+2. **Resolution**: If binding fails, either:
+   - Log an error and exit with a clear message indicating the conflict
+   - Use a fallback port if explicitly configured
+
+Example conflict resolution:
+```typescript
+import { createServer } from 'http';
+
+const startServer = async (app, config) => {
+  const { port, host } = config;
+  
+  try {
+    // Try binding to port
+    const server = createServer(app);
+    server.listen(port, host);
+    logger.info(`Server started on ${host}:${port}`);
+    
+    return { server, port };
+  } catch (error) {
+    logger.error(`Failed to start server on port ${port}`, error);
+    process.exit(1);
+  }
+};
+```
+
+### 4. Multiple Agent Configuration
+
+When running multiple agents:
+
+1. Each agent must use its designated port
+2. Environment-specific configuration (.env files) should be used
+3. The relay server must use port 4000 for inter-agent communication
+
+Example multi-agent startup:
+```bash
+# Start eth_memelord_9000 agent
+pnpm run start:agent -- --config characters/eth_memelord_9000.json
+
+# Start bag_flipper_9000 agent 
+pnpm run start:agent -- --config characters/bag_flipper_9000.json
+
+# Start relay server
+pnpm run start:relay
+```
+
+## Implementation Timeline
+
+1. Update all agent configurations to use designated ports
+2. Test individual agent port bindings
+3. Implement multi-agent startup scripts with proper port configurations
+
+## Verification
+
+Port configuration compliance can be verified with:
+
+```bash
+# Check currently used ports
+netstat -tulpn | grep LISTEN
+
+# Verify specific agent port
+lsof -i :3000  # For eth_memelord_9000 agent
+```
+
+## Exceptions
+
+No exceptions to the port assignments are permitted. All agents must use their designated ports.

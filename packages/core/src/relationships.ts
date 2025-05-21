@@ -1,0 +1,66 @@
+import type { IAgentRuntime, Relationship, IDatabaseAdapter, UUID } from './types.js';
+import { elizaLogger as logger } from './logger.js';
+
+export async function createRelationship({
+    runtime,
+    userA,
+    userB,
+}: {
+    runtime: IAgentRuntime;
+    userA: UUID;
+    userB: UUID;
+}): Promise<boolean> {
+    return runtime.databaseAdapter?.createRelationship({
+        userA,
+        userB,
+    }) ?? Promise.resolve(false);
+}
+
+export async function getRelationship({
+    runtime,
+    userA,
+    userB,
+}: {
+    runtime: IAgentRuntime;
+    userA: UUID;
+    userB: UUID;
+}) {
+    return runtime.databaseAdapter?.getRelationship({
+        userA,
+        userB,
+    }) ?? Promise.resolve(null);
+}
+
+export async function getRelationships({
+    runtime,
+    userId,
+}: {
+    runtime: IAgentRuntime;
+    userId: UUID;
+}) {
+    return runtime.databaseAdapter?.getRelationships({ userId }) ?? Promise.resolve([]);
+}
+
+export async function formatRelationships({
+    runtime,
+    userId,
+}: {
+    runtime: IAgentRuntime;
+    userId: UUID;
+}) {
+    const relationships = await getRelationships({ runtime, userId });
+
+    const formattedRelationships = relationships.map(
+        (relationship: Relationship) => {
+            const { userA, userB } = relationship;
+
+            if (userA === userId) {
+                return userB;
+            }
+
+            return userA;
+        }
+    );
+
+    return formattedRelationships;
+}

@@ -1,0 +1,97 @@
+{
+    "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+            "@elizaos/types": [
+                "packages/types/dist"
+            ],
+            "@elizaos/types/*": [
+                "packages/types/dist/*"
+            ],
+            "@elizaos/adapter-sqlite": [
+                "packages/adapter-sqlite/dist"
+            ],
+            "@elizaos/adapter-sqlite/*": [
+                "packages/adapter-sqlite/dist/*"
+            ],
+            "@elizaos/plugin-bootstrap": [
+                "packages/plugin-bootstrap/dist"
+            ],
+            "@elizaos/plugin-bootstrap/*": [
+                "packages/plugin-bootstrap/dist/*"
+            ],
+            "@elizaos/telegram-client": [
+                "packages/clients/telegram/dist"
+            ],
+            "@elizaos/telegram-client/*": [
+                "packages/clients/telegram/dist/*"
+            ],
+            "@elizaos/dynamic-imports": [
+                "packages/dynamic-imports/dist"
+            ],
+            "@elizaos/dynamic-imports/*": [
+                "packages/dynamic-imports/dist/*"
+            ],
+            "@elizaos/telegram-multiagent": [
+                "packages/telegram-multiagent/dist"
+            ],
+            "@elizaos/telegram-multiagent/*": [
+                "packages/telegram-multiagent/dist/*"
+            ],
+            "@elizaos/client-direct": [
+                "packages/client-direct/dist"
+            ],
+            "@elizaos/client-direct/*": [
+                "packages/client-direct/dist/*"
+            ],
+            "@elizaos/agent": [
+                "packages/agent/dist"
+            ],
+            "@elizaos/agent/*": [
+                "packages/agent/dist/*"
+            ],
+            "@elizaos/cli": [
+                "packages/cli/dist"
+            ],
+            "@elizaos/cli/*": [
+                "packages/cli/dist/*"
+            ],
+            "@elizaos/test-utils": [
+                "packages/test-utils/dist"
+            ],
+            "@elizaos/test-utils/*": [
+                "packages/test-utils/dist/*"
+            ],
+            "@elizaos/core": [
+                "packages/core/dist"
+            ],
+            "@elizaos/core/*": [
+                "packages/core/dist/*"
+            ]
+        },
+        "target": "ES2021",
+        "module": "nodenext",
+        "lib": [
+            "es2021",
+            "dom"
+        ],
+        "types": ["node"],
+        "moduleResolution": "nodenext",
+        "declaration": true,
+        "declarationMap": true,
+        "sourceMap": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "allowSyntheticDefaultImports": true,
+        "strict": true,
+        "isolatedModules": true,
+        "resolveJsonModule": true,
+        "outDir": "./dist",
+        "rootDir": "./src"
+    },
+    "exclude": [
+        "dist",
+        "**/*.test.ts",
+        "node_modules"
+    ]
+}

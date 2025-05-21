@@ -1,0 +1,185 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Testing and Cleanup Rule
+
+## Overview
+This rule establishes standards for testing ElizaOS components and ensuring proper cleanup of resources during testing and development to prevent resource leaks.
+
+## Testing Requirements
+
+### Unit Testing
+- All core components must have unit test coverage
+- Use Jest as the standard testing framework
+- Aim for minimum 70% code coverage for critical paths
+- Test structure should follow this pattern:
+  ```typescript
+  describe('Component name', () => {
+    beforeEach(() => {
+      // Setup test environment
+    });
+
+    afterEach(() => {
+      // Clean up resources
+    });
+
+    test('should perform expected behavior', () => {
+      // Test logic
+    });
+  });
+  ```
+
+### Integration Testing
+- Create dedicated test databases with predictable state
+- Mock external services when possible
+- Use environment variable `NODE_ENV=test` for test context
+- Integration tests should clean up any created resources
+- Database should be reset to known state after each test
+
+### Test Database Setup
+- Use SQLite in-memory database for tests:
+  ```typescript
+  const testDb = new Database(':memory:');
+  ```
+- For persistent test database:
+  ```typescript
+  const testDb = new Database('./test_db.sqlite');
+  ```
+- Create seed data using SQL scripts or programmatically:
+  ```typescript
+  beforeAll(async () => {
+    await testDb.exec(fs.readFileSync('./test/seed.sql', 'utf8'));
+  });
+  ```
+
+## Resource Cleanup
+
+### Database Connections
+- Always close database connections in `afterEach` or `afterAll` hooks:
+  ```typescript
+  afterAll(async () => {
+    await db.close();
+  });
+  ```
+- Use connection pools with proper setup/teardown
+- Handle database transaction rollbacks in tests
+
+### File System
+- Clean up temporary files after tests:
+  ```typescript
+  const tempFile = path.join(os.tmpdir(), 'test-file.txt');
+  afterEach(() => {
+    if (fs.existsSync(tempFile)) {
+      fs.unlinkSync(tempFile);
+    }
+  });
+  ```
+- Use dedicated test directories that get wiped between tests
+- Avoid writing to production directories during tests
+
+### Network Resources
+- Close network connections after tests:
+  ```typescript
+  let server;
+  beforeEach(() => {
+    server = app.listen(3000);  // Using eth_memelord_9000 agent port for testing
+  });
+  afterEach(() => {
+    server.close();
+  });
+  ```
+- Release ports when tests complete
+- Mock HTTP requests to avoid external dependencies
+
+### Telegram Bot Testing
+- Use the Telegraf test utilities:
+  ```typescript
+  import { Telegraf } from 'telegraf';
+  import { mock } from 'telegraf/test';
+
+  const bot = new Telegraf('fake-token');
+  // Add commands
+  bot.command('start', ctx => ctx.reply('Hello'));
+
+  test('should respond to start command', async () => {
+    const client = mock(bot);
+    await client.command('start');
+    expect(client.response).toMatchObject({ text: 'Hello' });
+  });
+  ```
+- Stop polling in cleanup:
+  ```typescript
+  afterAll(() => {
+    bot.stop();
+  });
+  ```
+
+### Multi-Agent Testing
+
+When testing multiple agents:
+
+1. **Port Allocation**:
+   ```typescript
+   // Configure unique ports for each agent
+   const agents = [
+     { id: 'eth_memelord_9000', port: 3000 },
+     { id: 'bag_flipper_9000', port: 3001 }
+   ];
+   
+   // Start each agent on its designated port
+   const servers = agents.map(agent => {
+     const server = createServer(app);
+     server.listen(agent.port);
+     return { id: agent.id, server, port: agent.port };
+   });
+   
+   // Clean up all servers after tests
+   afterAll(() => {
+     servers.forEach(({ server }) => server.close());
+   });
+   ```
+
+2. **Environment Isolation**:
+   ```typescript
+   // Create isolated environment for each agent
+   agents.forEach(agent => {
+     process.env.AGENT_ID = agent.id;
+     process.env.AGENT_PORT = agent.port.toString();
+     // Additional agent-specific env vars
+   });
+   ```
+
+## Memory Management
+
+### Handling Large Objects
+- Explicitly set large objects to null after use:
+  ```typescript
+  let largeObject = createLargeObject();
+  // Use largeObject
+  largeObject = null; // Allow garbage collection
+  ```
+- Monitor memory usage in long-running tests
+- Use global teardown for cleanup between test files
+
+### Event Listeners
+- Always remove event listeners in cleanup:
+  ```typescript
+  const listener = () => console.log('event');
+  emitter.on('event', listener);
+  
+  afterEach(() => {
+    emitter.off('event', listener);
+  });
+  ```
+- Check for listener leaks with Node.js flags:
+  ```
+  NODE_OPTIONS=--trace-warnings npm test
+  ```
+
+## Continuous Integration
+- All tests must pass in CI pipeline before merging
+- Configure test timeouts appropriately for CI environment
+- Archive test results and coverage reports
+- Fail builds when tests don't clean up properly (resource leaks) 
